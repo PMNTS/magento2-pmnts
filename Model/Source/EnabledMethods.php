@@ -3,7 +3,7 @@
  * Copyright © 2016 Magento. All rights reserved.
  * See COPYING.txt for license details.
  */
-namespace MindArc\FatZebra\Model\Source;
+namespace PMNTS\Gateway\Model\Source;
 
 class EnabledMethods implements \Magento\Framework\Option\ArrayInterface
 {

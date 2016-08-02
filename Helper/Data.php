@@ -1,5 +1,5 @@
 <?php
-namespace MindArc\FatZebra\Helper;
+namespace PMNTS\Gateway\Helper;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {

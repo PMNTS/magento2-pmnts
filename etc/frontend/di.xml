@@ -1,21 +1,20 @@
 <?xml version="1.0"?>
 <!--
 /**
-* MindArc_FatZebra DI definitions
+* PMNTS_Gateway DI definitions
 *
-* @category    MindArc
-* @package     MindArc_FatZebra
-* @author      John Vella
-* @copyright   MindArc (http://mindarc.com.au)
+* @category    PMNTS
+* @package     PMNTS_Gateway
+* @copyright   PMNTS (http://PMNTS.io)
 * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
-    <virtualType name="MindArc\FatZebra\Model\ConfigProvider" type="Magento\Payment\Model\CcGenericConfigProvider">
+    <virtualType name="PMNTS\Gateway\Model\ConfigProvider" type="Magento\Payment\Model\CcGenericConfigProvider">
         <arguments>
             <argument name="methodCodes" xsi:type="array">
-                <item name="mindarc_fatzebra" xsi:type="const">MindArc\FatZebra\Model\Payment::CODE</item>
+                <item name="PMNTS_Gateway" xsi:type="const">PMNTS\Gateway\Model\Payment::CODE</item>
             </argument>
         </arguments>
     </virtualType>
@@ -23,7 +22,7 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="mindarc_fatzebra_config_provider" xsi:type="object">MindArc\FatZebra\Model\ConfigProvider</item>
+                <item name="PMNTS_Gateway_config_provider" xsi:type="object">PMNTS\Gateway\Model\ConfigProvider</item>
             </argument>
         </arguments>
     </type>
@@ -31,8 +30,8 @@
     <type name="Magento\Framework\App\RouterList">
         <arguments>
             <argument name="routerList" xsi:type="array">
-                <item name="fatzebra" xsi:type="array">
-                    <item name="class" xsi:type="string">MindArc\FatZebra\Controller\Router</item>
+                <item name="Gateway" xsi:type="array">
+                    <item name="class" xsi:type="string">PMNTS\Gateway\Controller\Router</item>
                     <item name="disable" xsi:type="boolean">false</item>
                     <item name="sortOrder" xsi:type="string">22</item>
                 </item>

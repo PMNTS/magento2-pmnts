@@ -1,19 +1,18 @@
 <?xml version="1.0"?>
 <!--
 /**
-* MindArc_FatZebra admin configuration
+* PMNTS_Gateway admin configuration
 *
-* @category    MindArc
-* @package     MindArc_FatZebra
-* @author      John Vella
-* @copyright   MindArc (http://mindarc.com.au)
+* @category    PMNTS
+* @package     PMNTS_Gateway
+* @copyright   PMNTS (http://PMNTS.io)
 * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
-            <group id="mindarc_fatzebra" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="PMNTS_Gateway" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>PMNTS</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enabled</label>
@@ -25,12 +24,12 @@
 
                 <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>New Order Status</label>
-                    <source_model>MindArc\FatZebra\Model\Config\Source\Order\Status\Pendingpayment</source_model>
+                    <source_model>PMNTS\Gateway\Model\Config\Source\Order\Status\Pendingpayment</source_model>
                 </field>
 
                 <field id="auth_type" translate="label" type="select" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Payment Action</label>
-                    <source_model>MindArc\FatZebra\Model\Source\Action</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\Action</source_model>
                 </field>
 
                 <field id="sandbox_mode" translate="label" type="select" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -40,7 +39,7 @@
             
                 <field id="visible_card_types" translate="label" type="multiselect" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Credit Card Types</label>
-                    <source_model>MindArc\FatZebra\Model\Source\Cctype</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\Cctype</source_model>
                 </field>
 
                 <field id="direct_post_tokenization" translate="label" type="select" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -96,44 +95,44 @@
 
                 <field id="fraud_ship_lowcost" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Low Cost</label>
-                    <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_sameday" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Same Day</label>
-                    <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_overnight" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Overnight</label>
-                    <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_express" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Express</label>
-                    <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_international" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - International</label>
-                    <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_pickup" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Pickup</label>
-                    <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
+                    <source_model>PMNTS\Gateway\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="fraud_detection_enabled">1</field>
                     </depends>
                 </field>
             </group>

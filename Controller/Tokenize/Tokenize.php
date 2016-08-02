@@ -1,10 +1,10 @@
 <?php
-namespace MindArc\FatZebra\Controller\Tokenize;
+namespace PMNTS\Gateway\Controller\Tokenize;
 
 class Tokenize extends \Magento\Framework\App\Action\Action
 {
     public $api_version = "2";
-    public $url = "https://gateway.sandbox.fatzebra.com.au";
+    public $url = "https://gateway-sandbox.pmnts.io";
     public $_username;
     public $_token;
     public $helper;
@@ -13,12 +13,12 @@ class Tokenize extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $object_manager     = \Magento\Framework\App\ObjectManager::getInstance();
-        $helper             = $object_manager->get('MindArc\FatZebra\Helper\Data');
+        $helper             = $object_manager->get('PMNTS\Gateway\Helper\Data');
 
-        $this->_username    = $helper->getConfig('payment/fatzebra/fatzebra_username');
-        $this->_token       = $helper->getConfig('payment/fatzebra/fatzebra_token');
-        $this->test_mode    = $helper->getConfig('payment/fatzebra/fatzebra_test_mode');
-        $shared_secret      = $helper->getConfig('payment/fatzebra/fatzebra_shared_secret');
+        $this->_username    = $helper->getConfig('username');
+        $this->_token       = $helper->getConfig('token');
+        $this->test_mode    = $helper->getConfig('sandbox_mode');
+        $shared_secret      = $helper->getConfig('shared_secret');
         $nonce              = uniqid("fzdirect-");
         $verification       = hash_hmac('md5', $nonce, $shared_secret);
 
@@ -34,8 +34,6 @@ class Tokenize extends \Magento\Framework\App\Action\Action
                 'verification' => $verification
             );
             $result = $this->do_request("POST", '/credit_cards/direct/' . $this->_username, $payload);
-
-//        echo 'Credit Card Tokenize Result: <pre>' . print_r($result, true) . '</pre></br>';
 
             if ($result->r != 97) {
                 $tokenData['status'] = 'SUCCESS';
@@ -69,11 +67,11 @@ class Tokenize extends \Magento\Framework\App\Action\Action
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($curl, CURLOPT_USERPWD, $this->_username .":". $this->_token);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array("User-agent: FatZebra PHP Library " . $this->api_version));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array("User-agent: Gateway PHP Library " . $this->api_version));
 
         if ($method == "POST" || $method == "PUT") {
             curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-type: application/json", "User-agent: FatZebra PHP Library " . $this->api_version));
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-type: application/json", "User-agent: Gateway PHP Library " . $this->api_version));
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($payload));
         }
 

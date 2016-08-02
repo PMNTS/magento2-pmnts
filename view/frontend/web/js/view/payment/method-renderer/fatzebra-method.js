@@ -1,10 +1,9 @@
 /**
- * MindArc_FatZebra Magento JS component
+ * PMNTS_Gateway Magento JS component
  *
- * @category    MindArc
- * @package     MindArc_FatZebra
- * @author      John Vella
- * @copyright   MindArc (http://mindarc.com.au)
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 /*browser:true*/
@@ -20,11 +19,11 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'MindArc_FatZebra/payment/fatzebra-form'
+                template: 'PMNTS_Gateway/payment/Gateway-form'
             },
 
             getCode: function() {
-                return 'mindarc_fatzebra';
+                return 'PMNTS_Gateway';
             },
 
             isActive: function() {

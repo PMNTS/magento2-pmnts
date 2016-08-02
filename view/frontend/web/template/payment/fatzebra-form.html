@@ -1,11 +1,10 @@
 <!--
 /**
- * MindArc_FatZebra Template
+ * PMNTS_Gateway Template
  *
- * @category    MindArc
- * @package     MindArc_FatZebra
- * @author      John Vella
- * @copyright   MindArc (http://mindarc.com.au)
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 -->
@@ -250,7 +249,7 @@
                 <button class="action primary pre-auth"
                         type="submit"
                         data-bind="
-                        click: authorizeFatzebra,
+                        click: authorizeGateway,
                         attr: {title: $t('Place Order')},
                         css: {disabled: !isPlaceOrderActionAllowed()},
                         enable: (getCode() == isChecked())

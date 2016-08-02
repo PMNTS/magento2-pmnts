@@ -1,20 +1,19 @@
 <?php
 /**
- * FatZebra payment method model
+ * Gateway payment method model
  *
- * @category    MindArc
- * @package     MindArc_FatZebra
- * @author      John Vella
- * @copyright   MindArc (http://mindarc.com.au)
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
-namespace MindArc\FatZebra\Model;
-include('fatzebra.php');
+namespace PMNTS\Gateway\Model;
+include('Gateway.php');
 use Psr\Log\LoggerInterface;
 class Payment extends \Magento\Payment\Model\Method\Cc
 {
-    const CODE = 'mindarc_fatzebra';
+    const CODE = 'PMNTS_Gateway';
     const RE_ANS = "/[^A-Z\d\-_',\.;:\s]*/i";
     const RE_AN = "/[^A-Z\d]/i";
     const RE_NUMBER = "/[^\d]/";
@@ -26,7 +25,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     protected $_canCapturePartial           = true;
     protected $_canRefund                   = true;
     protected $_canRefundInvoicePartial     = true;
-    protected $_fatzebraApi = false;
+    protected $_GatewayApi = false;
     protected $_countryFactory;
     protected $_minAmount = null;
     protected $_maxAmount = null;
@@ -70,14 +69,14 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         );
 
         $this->_countryFactory = $countryFactory;
-        $this->_logger      = $logger;
+        $this->_logger_logger      = $logger;
         $this->_username    = $this->getConfigData('username');
         $this->_token       = $this->getConfigData('token');
         $this->_secret      = $this->getConfigData('shared_secret');
         $this->is_sandbox   = $this->getConfigData('test_mode');
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
 
-        $this->_fatzebraApi = new \FatZebra\Gateway($this->_username, $this->_token);
+        $this->_GatewayApi = new \Gateway\Gateway($this->_username, $this->_token);
     }
 
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -191,7 +190,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 $fraud_data = null;
             }
 
-            $purchase_request = new \FatZebra\PurchaseRequest(
+            $purchase_request = new \Gateway\PurchaseRequest(
                 $requestData['amount'],
                 $order->getIncrementId(),
                 $billing->getName(),
@@ -201,22 +200,22 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 $fraud_data
             );
 
-            $result = $this->_fatzebraApi->purchase($purchase_request);
+            $result = $this->_GatewayApi->purchase($purchase_request);
 
             if ($result->successful) {
                 $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
                 $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
                 $customerData = $customer->getDataModel();
-                $customerData->setCustomAttribute('fatzebra_token', $result->response->card_token);
-                $customerData->setCustomAttribute('fatzebra_masked_card_number', $result->response->card_number);
-                $customerData->setCustomAttribute('fatzebra_expiry_date', $result->response->card_expiry);
+                $customerData->setCustomAttribute('Gateway_token', $result->response->card_token);
+                $customerData->setCustomAttribute('Gateway_masked_card_number', $result->response->card_number);
+                $customerData->setCustomAttribute('Gateway_expiry_date', $result->response->card_expiry);
                 $customer->updateData($customerData);
                 $customer->save();
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.' . $e->getMessage()));
             }
         } catch (\Exception $e) {
-            $this->_logger->error(__('Payment capturing error.' . $e->getMessage()));
+            $this->_logger->addError(__('Payment capturing error.' . $e->getMessage()));
             throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.' . $e->getMessage()));
         }
 
@@ -236,14 +235,14 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 'reference_id'      => $order->getIncrementId()
             ];
 
-            $result = $this->_fatzebraApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);
+            $result = $this->_GatewayApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);
             if ($result->successful) {
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Payment refunding error.'));
             }
 
         } catch (\Exception $e) {
-            $this->_logger->error(__('Payment refunding error.'));
+            $this->_logger->addError(__('Payment refunding error.'));
             throw new \Magento\Framework\Validator\Exception(__('Payment refunding error.'));
         }
 
@@ -303,12 +302,12 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     {
         $shipping = $order->getShippingMethod();
 
-        $method_lowcost = explode(',', $this->getConfigData('payment/fatzebra/fraud_ship_lowcost'));
-        $method_overnight = explode(',', $this->getConfigData('payment/fatzebra/fraud_ship_overnight'));
-        $method_sameday = explode(',', $this->getConfigData('payment/fatzebra/fraud_ship_sameday'));
-        $method_pickup = explode(',', $this->getConfigData('payment/fatzebra/fraud_ship_pickup'));
-        $method_express = explode(',', $this->getConfigData('payment/fatzebra/fraud_ship_express'));
-        $method_international = explode(',', $this->getConfigData('payment/fatzebra/fraud_ship_international'));
+        $method_lowcost = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_lowcost'));
+        $method_overnight = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_overnight'));
+        $method_sameday = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_sameday'));
+        $method_pickup = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_pickup'));
+        $method_express = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_express'));
+        $method_international = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_international'));
 
         if (in_array($shipping, $method_lowcost)) {
             return 'low_cost';
@@ -362,7 +361,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
     public function log($msg)
     {
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/fatzebra.log');
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/Gateway.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         $logger->info($msg);

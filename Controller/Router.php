@@ -1,5 +1,5 @@
 <?php
-namespace MindArc\FatZebra\Controller;
+namespace PMNTS\Gateway\Controller;
 
 
 class Router implements \Magento\Framework\App\RouterInterface
@@ -48,11 +48,11 @@ class Router implements \Magento\Framework\App\RouterInterface
              * default magento 2 installation with sample data.
              */
             $request->setModuleName('cms')->setControllerName('page')->setActionName('view')->setParam('page_id', 5);
-        } else if(strpos($identifier, 'fatzebra') !== false) {
+        } else if(strpos($identifier, 'Gateway') !== false) {
             /*
              * We must set module, controller path and action name for our controller class(Controller/Test/Test.php)
              */
-            $request->setModuleName('fatzebra')->setControllerName('tokenize')->setActionName('tokenize');
+            $request->setModuleName('Gateway')->setControllerName('tokenize')->setActionName('tokenize');
         } else {
             //There is no match
             return;

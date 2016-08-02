@@ -4,7 +4,7 @@
         "map": [
             [
                 "*",
-                "MindArc/FatZebra"
+                "PMNTS/Gateway"
             ]
         ]
     },
@@ -13,6 +13,7 @@
     ],
     "name": "pmnts/magento2-pmnts",
     "require": {
+        "fatzebra/fatzebra": "*"
     },
     "type": "magento2-module",
     "version": "dev-master"

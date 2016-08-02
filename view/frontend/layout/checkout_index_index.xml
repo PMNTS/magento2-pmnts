@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
 <!--
 /**
-* MindArc_FatZebra layout configuration
+* PMNTS_Gateway layout configuration
 *
-* @category    MindArc
-* @package     MindArc_FatZebra
-* @author      John Vella
-* @copyright   MindArc (http://mindarc.com.au)
+* @category    PMNTS
+* @package     PMNTS_Gateway
+* @copyright   PMNTS (http://PMNTS.io)
 * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 */
 -->
@@ -14,8 +13,8 @@
     <body>
 
         <referenceContainer name="content">
-            <block name="mindarc_fatzebra_cc"
-                   class="MindArc\FatZebra\Block\Form\Cc"
+            <block name="PMNTS_Gateway_cc"
+                   class="PMNTS\Gateway\Block\Form\Cc"
                    template="form/cc.phtml" />
         </referenceContainer>
         <referenceBlock name="checkout.root">
@@ -35,10 +34,10 @@
                                                             <!-- merge payment method renders here -->
 
                                                             <item name="children" xsi:type="array">
-                                                                <item name="mindarc_fatzebra-payments" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">MindArc_FatZebra/js/view/payment/fatzebra-payments</item>
+                                                                <item name="PMNTS_Gateway-payments" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">PMNTS_Gateway/js/view/payment/Gateway-payments</item>
                                                                     <item name="methods" xsi:type="array">
-                                                                        <item name="mindarc_fatzebra" xsi:type="array">
+                                                                        <item name="PMNTS_Gateway" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
                                                                         </item>
                                                                     </item>

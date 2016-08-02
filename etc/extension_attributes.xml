@@ -1,10 +1,10 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Api/etc/extension_attributes.xsd">
     <extension_attributes for="Magento\Customer\Api\Data\CustomerInterface">
-        <attribute code="fatzebra_token" type="string">
+        <attribute code="gateway_token" type="string">
             <join reference_table="customer_extension" reference_field="customer_id" join_on_field="entity_id">
-                <field>fatzebra_token</field>
-                <field>fatzebra_expiry_date</field>
-                <field>fatzebra_masked_card_number</field>
+                <field>gateway_token</field>
+                <field>gateway_expiry_date</field>
+                <field>gateway_masked_card_number</field>
             </join>
         </attribute>
     </extension_attributes>

@@ -1,12 +1,12 @@
 <script>
 
-        function authorizeFatzebra()
+        function authorizeGateway()
         {
-            var cc_num = jQuery('#mindarc_fatzebra-form input[name*="payment[cc_number]"]').val();
-            var cc_month = jQuery('#mindarc_fatzebra-form select[name*="cc_exp_month"]').val();
-            var cc_year = jQuery('#mindarc_fatzebra-form select[name*="cc_exp_year"]').val();
-            var cc_vid = jQuery('#mindarc_fatzebra-form input[name*="cc_cid"]').val();
-            var cc_holder = jQuery('#mindarc_fatzebra-form input[name*="cc_holder"]').val();
+            var cc_num = jQuery('#PMNTS_Gateway-form input[name*="payment[cc_number]"]').val();
+            var cc_month = jQuery('#PMNTS_Gateway-form select[name*="cc_exp_month"]').val();
+            var cc_year = jQuery('#PMNTS_Gateway-form select[name*="cc_exp_year"]').val();
+            var cc_vid = jQuery('#PMNTS_Gateway-form input[name*="cc_cid"]').val();
+            var cc_holder = jQuery('#PMNTS_Gateway-form input[name*="cc_holder"]').val();
 
             var sendInfo = {
                 'cc_holder': cc_holder,
@@ -19,7 +19,7 @@
             console.log('Sending Information: ' + sendInfo);
             jQuery.ajax({
                 type: "POST",
-                url: "<?php echo $block->getUrl('fatzebra/tokenize') ?>",
+                url: "<?php echo $block->getUrl('Gateway/tokenize') ?>",
                 dataType: 'json',
                 data: sendInfo,
                 complete: function (msg) {
@@ -33,27 +33,27 @@
                         var card_token = json.cc_token;
                         var card_number = json.cc_number;
 
-                        var masked_number = jQuery('#mindarc_fatzebra-form input[name="payment[cc_number_masked]"]');
+                        var masked_number = jQuery('#PMNTS_Gateway-form input[name="payment[cc_number_masked]"]');
                         if (!masked_number) {
                             jQuery("<input type='text' value='' />")
                                 .attr("id", "payment[cc_number_masked]")
                                 .attr("name", "payment[cc_number_masked]")
                                 .val(card_number)
                                 .attr('type', 'hidden')
-                                .prependTo("#mindarc_fatzebra-form");
+                                .prependTo("#PMNTS_Gateway-form");
                         } else {
                             jQuery(masked_number).val(card_number);
                             console.log(card_number);
                         }
 
-                        var token = jQuery('#mindarc_fatzebra-form input[name="payment[cc_token]"]');
+                        var token = jQuery('#PMNTS_Gateway-form input[name="payment[cc_token]"]');
                         if (!token) {
                             jQuery("<input type='text' value='' />")
                                 .attr("id", "payment[cc_token]")
                                 .attr("name", "payment[cc_token]")
                                 .val(card_token)
                                 .attr('type', 'hidden')
-                                .prependTo("#mindarc_fatzebra-form");
+                                .prependTo("#PMNTS_Gateway-form");
                             console.log(card_token);
                         } else {
                             jQuery(token).val(card_token);

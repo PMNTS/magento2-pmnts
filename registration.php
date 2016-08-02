@@ -2,6 +2,6 @@
 
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    'MindArc_FatZebra',
+    'PMNTS_Gateway',
     __DIR__
 );

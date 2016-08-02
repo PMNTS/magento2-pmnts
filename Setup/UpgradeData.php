@@ -1,5 +1,5 @@
 <?php
-namespace MindArc\FatZebra\Setup;
+namespace PMNTS\Gateway\Setup;
 
 use Magento\Customer\Model\Customer;
 use Magento\Customer\Setup\CustomerSetup;
@@ -36,7 +36,7 @@ class UpgradeData implements UpgradeDataInterface
         $customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);
         $customerSetup->addAttribute(
             Customer::ENTITY,
-            'fatzebra_token',
+            'Gateway_token',
             [
                 'label' => 'Card Token',
                 'required' => 0,
@@ -48,7 +48,7 @@ class UpgradeData implements UpgradeDataInterface
 
         $customerSetup->addAttribute(
             Customer::ENTITY,
-            'fatzebra_masked_card_number',
+            'Gateway_masked_card_number',
             [
                 'label' => 'Masked Card Number',
                 'required' => 0,
@@ -57,13 +57,13 @@ class UpgradeData implements UpgradeDataInterface
                 'position' => 100
             ]
         );
-        $customerSetup->getEavConfig()->getAttribute('customer', 'fatzebra_masked_card_number')
+        $customerSetup->getEavConfig()->getAttribute('customer', 'Gateway_masked_card_number')
             ->setData('used_in_forms', ['adminhtml_customer'])
             ->save();
 
         $customerSetup->addAttribute(
             Customer::ENTITY,
-            'fatzebra_expiry_date',
+            'Gateway_expiry_date',
             [
                 'label' => 'Card Expiry Date',
                 'required' => 0,
