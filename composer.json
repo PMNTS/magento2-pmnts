@@ -7,7 +7,6 @@
         "OSL-3.0"
     ],
     "require": {
-        "fatzebra/fatzebra": "2.*"
     },
     "extra": {
         "map": [
