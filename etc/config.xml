@@ -17,9 +17,12 @@
                 <model>PMNTS\Gateway\Model\Payment</model>
                 <payment_action>authorize_capture</payment_action>
                 <title>Credit Card</title>
+                <order_status>processing</order_status>
                 <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
-                <cctypes>AE,VI,MC,JCB</cctypes>
+                <visible_card_types>AE,VI,MC,JCB</visible_card_types>
                 <allowspecific>0</allowspecific>
+                <sort_order>1</sort_order>
+                <iframe_tokenization>1</iframe_tokenization>
                 <username>TEST</username>
                 <token>TEST</token>
                 <shared_secret>033bd94b11</shared_secret>
