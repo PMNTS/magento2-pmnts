@@ -15,8 +15,5 @@
     "require": {
     },
     "type": "magento2-module",
-    "version": "dev-master",
-    "autoload": {
-        "files": [ "registration.php" ]
-    }
+    "version": "dev-master"
 }
