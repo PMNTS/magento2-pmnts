@@ -35,7 +35,7 @@
 
                                                             <item name="children" xsi:type="array">
                                                                 <item name="pmnts_gateway-payments" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">pmnt_gateway/js/view/payment/Gateway-payments</item>
+                                                                    <item name="component" xsi:type="string">pmnt_gateway/js/view/payment/pmnts-payments</item>
                                                                     <item name="methods" xsi:type="array">
                                                                         <item name="pmnts_gateway" xsi:type="array">
                                                                             <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
