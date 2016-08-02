@@ -73,7 +73,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_username    = $this->getConfigData('username');
         $this->_token       = $this->getConfigData('token');
         $this->_secret      = $this->getConfigData('shared_secret');
-        $this->is_sandbox   = $this->getConfigData('test_mode');
+        $this->is_sandbox   = $this->getConfigData('sandbox_mode');
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
 
         $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
