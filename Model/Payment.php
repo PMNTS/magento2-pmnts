@@ -212,11 +212,11 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 $customer->updateData($customerData);
                 $customer->save();
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.' . $e->getMessage()));
+                throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.'));
             }
         } catch (\Exception $e) {
             $this->_logger->addError(__('Payment capturing error.' . $e->getMessage()));
-            throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.' . $e->getMessage()));
+            throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.'));
         }
 
         return $this;
