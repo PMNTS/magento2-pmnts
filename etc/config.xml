@@ -21,7 +21,9 @@
                 <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <cctypes>AE,VI,MC,JCB</cctypes>
                 <allowspecific>0</allowspecific>
-                <min_order_total>0.50</min_order_total>
+                <username>TEST</username>
+                <token>TEST</token>
+                <shared_secret>TEST</shared_secret>
             </mindarc_fatzebra>
         </payment>
     </default>

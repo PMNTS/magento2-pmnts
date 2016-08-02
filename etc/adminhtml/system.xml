@@ -13,7 +13,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
-            <group id="fatzebra" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="mindarc_fatzebra" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>PMNTS</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Enabled</label>
@@ -33,25 +33,25 @@
                     <source_model>MindArc\FatZebra\Model\Source\Action</source_model>
                 </field>
 
-                <field id="fatzebra_sandbox_mode" translate="label" type="select" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="sandbox_mode" translate="label" type="select" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sandbox Mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             
-                <field id="fatzebra_visible_card_types" translate="label" type="multiselect" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="visible_card_types" translate="label" type="multiselect" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Credit Card Types</label>
                     <source_model>MindArc\FatZebra\Model\Source\Cctype</source_model>
                 </field>
 
-                <field id="fatzebra_direct_post_tokenization" translate="label" type="select" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="direct_post_tokenization" translate="label" type="select" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>IFRAME Tokenization</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="fatzebra_iframe_css" translate="label" type="text" sortorder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="iframe_css" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>IFRAME Stylesheet URL</label>
                     <depends>
-                        <field id="fatzebra_direct_post_tokenization">1</field>
+                        <field id="direct_post_tokenization">1</field>
                     </depends>
                 </field>
 
@@ -72,15 +72,15 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="fatzebra_username" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="username" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Username</label>
                 </field>
 
-                <field id="fatzebra_token" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="token" translate="label" type="text" sortOrder="27" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Token</label>
                 </field>
 
-                <field id="fatzebra_shared_secret" translate="label" type="text" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="shared_secret" translate="label" type="text" sortOrder="28" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Shared Secret</label>
                 </field>
 
@@ -89,51 +89,51 @@
                     <frontend_class>validate-number</frontend_class>
                 </field>
 
-                <field id="fatzebra_retail_decisions_fraud_detection_enabled" translate="label" type="select" sortOrder="101" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="fraud_detection_enabled" translate="label" type="select" sortOrder="101" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Fraud Detection</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
-                <field id="fatzebra_fraud_ship_lowcost" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="fraud_ship_lowcost" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Low Cost</label>
                     <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="fatzebra_retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="retail_decisions_fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_sameday" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Same Day</label>
                     <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="fatzebra_retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="retail_decisions_fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_overnight" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Overnight</label>
                     <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="fatzebra_retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="retail_decisions_fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_express" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Express</label>
                     <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="fatzebra_retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="retail_decisions_fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_international" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - International</label>
                     <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="fatzebra_retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="retail_decisions_fraud_detection_enabled">1</field>
                     </depends>
                 </field>
                 <field id="fraud_ship_pickup" translate="label" type="multiselect" sortOrder="102" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Fraud Shipping Map - Pickup</label>
                     <source_model>MindArc\FatZebra\Model\Source\EnabledMethods</source_model>
                     <depends>
-                        <field id="fatzebra_retail_decisions_fraud_detection_enabled">1</field>
+                        <field id="retail_decisions_fraud_detection_enabled">1</field>
                     </depends>
                 </field>
             </group>

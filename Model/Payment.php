@@ -71,11 +71,11 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
         $this->_countryFactory = $countryFactory;
         $this->_logger      = $logger;
-        $this->_username    = $this->getConfigData('fatzebra_username');
-        $this->_token       = $this->getConfigData('fatzebra_token');
-        $this->_secret      = $this->getConfigData('fatzebra_shared_secret');
-        $this->is_sandbox   = $this->getConfigData('fatzebra_test_mode');
-        $this->check_for_fraud   = $this->getConfigData('fatzebra_retail_decisions_fraud_detection_enabled');
+        $this->_username    = $this->getConfigData('username');
+        $this->_token       = $this->getConfigData('token');
+        $this->_secret      = $this->getConfigData('shared_secret');
+        $this->is_sandbox   = $this->getConfigData('test_mode');
+        $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
 
         $this->_fatzebraApi = new \FatZebra\Gateway($this->_username, $this->_token);
     }
