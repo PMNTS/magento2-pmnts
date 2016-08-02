@@ -19,7 +19,7 @@
                 <title>Credit Card</title>
                 <order_status>processing</order_status>
                 <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
-                <visible_card_types>AE,VI,MC,JCB</visible_card_types>
+                <cctypes>AE,VI,MC,JCB</cctypes>
                 <allowspecific>0</allowspecific>
                 <sort_order>1</sort_order>
                 <iframe_tokenization>1</iframe_tokenization>

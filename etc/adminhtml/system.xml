@@ -56,7 +56,7 @@
                         <field id="iframe_tokenization">1</field>
                     </depends>
                 </field>
-                <field id="visible_card_types" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="100" translate="label" type="multiselect">
+                <field id="cctypes" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="100" translate="label" type="multiselect">
                     <label>Credit Card Types</label>
                     <source_model>PMNTS\Gateway\Model\Source\Cctype</source_model>
                 </field>
