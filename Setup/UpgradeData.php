@@ -36,7 +36,7 @@ class UpgradeData implements UpgradeDataInterface
         $customerSetup = $this->customerSetupFactory->create(['setup' => $setup]);
         $customerSetup->addAttribute(
             Customer::ENTITY,
-            'Gateway_token',
+            'gateway_token',
             [
                 'label' => 'Card Token',
                 'required' => 0,
@@ -48,7 +48,7 @@ class UpgradeData implements UpgradeDataInterface
 
         $customerSetup->addAttribute(
             Customer::ENTITY,
-            'Gateway_masked_card_number',
+            'gateway_masked_card_number',
             [
                 'label' => 'Masked Card Number',
                 'required' => 0,
@@ -57,13 +57,13 @@ class UpgradeData implements UpgradeDataInterface
                 'position' => 100
             ]
         );
-        $customerSetup->getEavConfig()->getAttribute('customer', 'Gateway_masked_card_number')
+        $customerSetup->getEavConfig()->getAttribute('customer', 'gateway_masked_card_number')
             ->setData('used_in_forms', ['adminhtml_customer'])
             ->save();
 
         $customerSetup->addAttribute(
             Customer::ENTITY,
-            'Gateway_expiry_date',
+            'gateway_expiry_date',
             [
                 'label' => 'Card Expiry Date',
                 'required' => 0,

@@ -9,7 +9,7 @@
  */
 
 namespace PMNTS\Gateway\Model;
-include('Gateway.php');
+include('fatzebra.php');
 use Psr\Log\LoggerInterface;
 class Payment extends \Magento\Payment\Model\Method\Cc
 {
@@ -76,7 +76,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->is_sandbox   = $this->getConfigData('test_mode');
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
 
-        $this->_GatewayApi = new \Gateway\Gateway($this->_username, $this->_token);
+        $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
     }
 
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -190,7 +190,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 $fraud_data = null;
             }
 
-            $purchase_request = new \Gateway\PurchaseRequest(
+            $purchase_request = new \FatZebra\PurchaseRequest(
                 $requestData['amount'],
                 $order->getIncrementId(),
                 $billing->getName(),
@@ -206,9 +206,9 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
                 $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
                 $customerData = $customer->getDataModel();
-                $customerData->setCustomAttribute('Gateway_token', $result->response->card_token);
-                $customerData->setCustomAttribute('Gateway_masked_card_number', $result->response->card_number);
-                $customerData->setCustomAttribute('Gateway_expiry_date', $result->response->card_expiry);
+                $customerData->setCustomAttribute('gateway_token', $result->response->card_token);
+                $customerData->setCustomAttribute('gateway_masked_card_number', $result->response->card_number);
+                $customerData->setCustomAttribute('gateway_expiry_date', $result->response->card_expiry);
                 $customer->updateData($customerData);
                 $customer->save();
             } else {
@@ -302,12 +302,12 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     {
         $shipping = $order->getShippingMethod();
 
-        $method_lowcost = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_lowcost'));
-        $method_overnight = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_overnight'));
-        $method_sameday = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_sameday'));
-        $method_pickup = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_pickup'));
-        $method_express = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_express'));
-        $method_international = explode(',', $this->getConfigData('payment/Gateway/fraud_ship_international'));
+        $method_lowcost = explode(',', $this->getConfigData('fraud_ship_lowcost'));
+        $method_overnight = explode(',', $this->getConfigData('fraud_ship_overnight'));
+        $method_sameday = explode(',', $this->getConfigData('fraud_ship_sameday'));
+        $method_pickup = explode(',', $this->getConfigData('fraud_ship_pickup'));
+        $method_express = explode(',', $this->getConfigData('fraud_ship_express'));
+        $method_international = explode(',', $this->getConfigData('fraud_ship_international'));
 
         if (in_array($shipping, $method_lowcost)) {
             return 'low_cost';
@@ -361,7 +361,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
     public function log($msg)
     {
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/Gateway.log');
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/PMNTSGateway.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         $logger->info($msg);

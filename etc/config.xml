@@ -22,7 +22,7 @@
                 <allowspecific>0</allowspecific>
                 <username>TEST</username>
                 <token>TEST</token>
-                <shared_secret>TEST</shared_secret>
+                <shared_secret>033bd94b11</shared_secret>
             </pmnts_gateway>
         </payment>
     </default>
