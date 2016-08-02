@@ -13,7 +13,6 @@
     ],
     "name": "pmnts/magento2-pmnts",
     "require": {
-        "fatzebra/fatzebra": "dev-master"
     },
     "type": "magento2-module",
     "version": "dev-master"
