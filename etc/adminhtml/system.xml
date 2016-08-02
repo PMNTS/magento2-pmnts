@@ -53,7 +53,7 @@
                 <field id="iframe_css" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="91" translate="label" type="text">
                     <label>IFRAME Stylesheet URL</label>
                     <depends>
-                        <field id="direct_post_tokenization">1</field>
+                        <field id="iframe_tokenization">1</field>
                     </depends>
                 </field>
                 <field id="visible_card_types" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="100" translate="label" type="multiselect">
