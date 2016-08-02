@@ -1,0 +1,20 @@
+{
+    "name": "mindarc/fatzebra",
+    "description": "FatZebra integration for Magento 2",
+    "type": "magento2-module",
+    "version": "dev-master",
+    "license": [
+        "OSL-3.0"
+    ],
+    "require": {
+        "fatzebra/fatzebra": "2.*"
+    },
+    "extra": {
+        "map": [
+            [
+                "*",
+                "MindArc/FatZebra"
+            ]
+        ]
+    }
+}

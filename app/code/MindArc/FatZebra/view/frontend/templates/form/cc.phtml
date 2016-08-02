@@ -1,0 +1,69 @@
+<script>
+
+        function authorizeFatzebra()
+        {
+            var cc_num = jQuery('#mindarc_fatzebra-form input[name*="payment[cc_number]"]').val();
+            var cc_month = jQuery('#mindarc_fatzebra-form select[name*="cc_exp_month"]').val();
+            var cc_year = jQuery('#mindarc_fatzebra-form select[name*="cc_exp_year"]').val();
+            var cc_vid = jQuery('#mindarc_fatzebra-form input[name*="cc_cid"]').val();
+            var cc_holder = jQuery('#mindarc_fatzebra-form input[name*="cc_holder"]').val();
+
+            var sendInfo = {
+                'cc_holder': cc_holder,
+                'cc_number': cc_num,
+                'cc_month': cc_month,
+                'cc_year': cc_year,
+                'cc_vid': cc_vid
+            };
+
+            console.log('Sending Information: ' + sendInfo);
+            jQuery.ajax({
+                type: "POST",
+                url: "<?php echo $block->getUrl('fatzebra/tokenize') ?>",
+                dataType: 'json',
+                data: sendInfo,
+                complete: function (msg) {
+                    var json = jQuery.parseJSON(msg.responseText);
+                    console.log(json);
+                    if (json.status == 'ERROR') {
+                        console.log('Failed to Tokenize Payment: ' + json.messages);
+                    } else {
+                        console.log('Tokenized Payment');
+                        var card_holder = json.cc_owner;
+                        var card_token = json.cc_token;
+                        var card_number = json.cc_number;
+
+                        var masked_number = jQuery('#mindarc_fatzebra-form input[name="payment[cc_number_masked]"]');
+                        if (!masked_number) {
+                            jQuery("<input type='text' value='' />")
+                                .attr("id", "payment[cc_number_masked]")
+                                .attr("name", "payment[cc_number_masked]")
+                                .val(card_number)
+                                .attr('type', 'hidden')
+                                .prependTo("#mindarc_fatzebra-form");
+                        } else {
+                            jQuery(masked_number).val(card_number);
+                            console.log(card_number);
+                        }
+
+                        var token = jQuery('#mindarc_fatzebra-form input[name="payment[cc_token]"]');
+                        if (!token) {
+                            jQuery("<input type='text' value='' />")
+                                .attr("id", "payment[cc_token]")
+                                .attr("name", "payment[cc_token]")
+                                .val(card_token)
+                                .attr('type', 'hidden')
+                                .prependTo("#mindarc_fatzebra-form");
+                            console.log(card_token);
+                        } else {
+                            jQuery(token).val(card_token);
+                            console.log(card_token);
+                        }
+
+                        jQuery('.checkout').click();
+                    }
+                }
+            });
+        }
+
+</script>
