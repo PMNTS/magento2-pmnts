@@ -13,7 +13,7 @@ include('fatzebra.php');
 use Psr\Log\LoggerInterface;
 class Payment extends \Magento\Payment\Model\Method\Cc
 {
-    const CODE = 'PMNTS_Gateway';
+    const CODE = 'pmnts_gateway';
     const RE_ANS = "/[^A-Z\d\-_',\.;:\s]*/i";
     const RE_AN = "/[^A-Z\d]/i";
     const RE_NUMBER = "/[^\d]/";
