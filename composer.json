@@ -1,6 +1,6 @@
 {
-    "name": "mindarc/fatzebra",
-    "description": "FatZebra integration for Magento 2",
+    "name": "pmnts/magento2-pmnts",
+    "description": "PMNTS Payment Gateway integration for Magento 2",
     "type": "magento2-module",
     "version": "dev-master",
     "license": [
