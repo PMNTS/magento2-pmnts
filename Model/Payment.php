@@ -202,17 +202,21 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
             $result = $this->_GatewayApi->purchase($purchase_request);
 
-            if ($result->successful) {
-                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
-                $customerData = $customer->getDataModel();
-                $customerData->setCustomAttribute('gateway_token', $result->response->card_token);
-                $customerData->setCustomAttribute('gateway_masked_card_number', $result->response->card_number);
-                $customerData->setCustomAttribute('gateway_expiry_date', $result->response->card_expiry);
-                $customer->updateData($customerData);
-                $customer->save();
+            if ($result->successful && $result->response->successful) {
+                // $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                // $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
+                // $customerData = $customer->getDataModel();
+                // $customerData->setCustomAttribute('gateway_token', $result->response->card_token);
+                // $customerData->setCustomAttribute('gateway_masked_card_number', $result->response->card_number);
+                // $customerData->setCustomAttribute('gateway_expiry_date', $result->response->card_expiry);
+                // $customer->updateData($customerData);
+                // $customer->save();
+
+                 $payment->setTransactionId($result->response->id)->setIsTransactionClosed(0);
+            } else if ($result->successful) {
+                throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . $result->response->message));
             } else {
-                throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.'));
+                throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . implode(", ", $result->errors)));
             }
         } catch (\Exception $e) {
             $this->_logger->addError(__('Payment capturing error.' . $e->getMessage()));
