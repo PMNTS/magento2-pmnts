@@ -1,7 +1,7 @@
-magento2-MindArc_FatZebra
+magento2-PMNTS_Gateway
 ======================
 
-FatZebra payment gateway Magento2 extension
+PMNTS payment gateway Magento2 extension
 
 Install
 =======
@@ -11,17 +11,17 @@ Install
 2. Enter following commands to install module:
 
     ```bash
-    composer config repositories.mindarcfatzebra git https://github.com/MindArc/magento2-MindArc_FatZebra.git
-    composer require mindarc/fatzebra:dev-master
+    composer config repositories.pmnts git https://github.com/PMNTS/magento2-pmnts.git
+    composer require pmnts/magento2-pmnts:dev-master
     ```
    Wait while dependencies are updated.
 
 3. Enter following commands to enable module:
 
     ```bash
-    php bin/magento module:enable MindArc_FatZebra --clear-static-content
+    php bin/magento module:enable PMNTS_Gateway --clear-static-content
     php bin/magento setup:upgrade
     ```
-4. Enable and configure FatZebra in Magento Admin under Stores/Configuration/Payment Methods/FatZebra
+4. Enable and configure FatZebra in Magento Admin under Stores/Configuration/Payment Methods/PMNTS
 
 
