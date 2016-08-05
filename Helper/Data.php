@@ -6,10 +6,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public $scopeConfig;
 
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\App\Helper\Context $context
     ) {
-        $this->scopeConfig = $scopeConfig;
+        $this->scopeConfig = $context->getScopeConfig();
         parent::__construct($context);
     }
 
