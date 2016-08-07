@@ -33,6 +33,14 @@ define(
             validate: function() {
                 var $form = $('#' + this.getCode() + '-form');
                 return $form.validation() && $form.validation('isValid');
+            },
+
+            getIframeUrl: function() {
+              window.checkoutConfig.payment.pmnts_gateway.getIframeSrc;
+            },
+
+            isIframeEnabled: function() {
+              window.checkoutConfig.payment.pmnts_gateway.getIframeEnabled;
             }
         });
     }
