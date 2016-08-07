@@ -57,17 +57,18 @@ class PmntsConfigProvider implements ConfigProviderInterface
         $hash_payload = "$nonce:100.25:AUD";
         $hash = hash_hmac ("md5", $hash_payload, $shared_secret);
 
-        $url = "https://paynow.pmnts.io/v2/{$username}/{$nonce}/AUD/1.0/{$hash}?show_extras=false&iframe=false&paypal=false&show_extras=false";
-        // https://paynow-sandbox.pmnts.io/
+        $base_url = "https://paynow.pmnts.io";
         if($is_sandbox) {
-            $url = "https://paynow-sandbox.pmnts.io/v2/{$username}/{$nonce}/AUD/1.0/{$hash}?show_extras=false&iframe=false&paypal=false&show_extras=false";
+            $base_url = "https://paynow-sandbox.pmnts.io";
         }
+
+        $url = "{$base_url}/v2/{$username}/{$nonce}/AUD/1.0/{$hash}?show_extras=false&show_email=false&iframe=true&paypal=false&tokenize=true&masterpass=false&visacheckout=false&hide_button=true";
 
         // If CSS URL is set, generate signature, add to iframe URL
         $css_url = $this->getConfigValue("iframe_css");
         if (strlen($css_url) > 0) {
           $css_signature = hash_hmac("md5", $css_url, $shared_secret);
-          $url = $url . "&css=$css_url&css_signature=$css_signature";
+          $url = $url . "&css={$css_url}&css_signature={$css_signature}";
         }
 
         return $url;
