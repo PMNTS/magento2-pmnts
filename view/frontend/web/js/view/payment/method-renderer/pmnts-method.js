@@ -36,11 +36,15 @@ define(
             },
 
             getIframeUrl: function() {
-              window.checkoutConfig.payment.pmnts_gateway.getIframeSrc;
+              window.checkoutConfig.payment.pmntsGateway.getIframeSrc;
             },
 
             isIframeEnabled: function() {
-              window.checkoutConfig.payment.pmnts_gateway.getIframeEnabled;
+              window.checkoutConfig.payment.pmntsGateway.getIframeEnabled;
+            },
+
+            getFraudFingerprintSrc: function() {
+              window.checkoutConfig.payment.pmntsGateway.fraudFingerprintSrc
             }
         });
     }

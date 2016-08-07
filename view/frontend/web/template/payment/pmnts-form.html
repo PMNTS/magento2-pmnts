@@ -10,6 +10,19 @@
 -->
 
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+  <script>
+    var io_bbout_element_id = 'io_bb';
+    var io_enable_rip = true;
+    var io_install_flash = false;
+    var io_install_stm = false;
+    var io_exclude_stm = 12;
+  </script>
+  <script data-bind="attr: {'src': getFraudFingerprintSrc()}"></script>
+  <input type="hidden"
+         id="io_bb"
+         name="payment[io_bb]"
+         class="input-text"
+         value="">
     <div class="payment-method-title field choice">
         <input type="radio"
                name="payment[method]"
@@ -30,6 +43,14 @@
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
           <!-- ko if: isIframeEnabled() -->
             <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" />
+            <input type="hidden"
+                   name="payment[card_token]"
+                   class="input-text"
+                   value=""
+                   data-bind="attr: {'id': getCode() + '-token'}">
+                   <div style='display: none;'>
+                     <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
+                   </div>
           <!-- /ko -->
           <!-- ko ifnot: isIframeEnabled() -->
             <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
