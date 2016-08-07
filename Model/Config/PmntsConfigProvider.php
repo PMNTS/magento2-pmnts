@@ -33,8 +33,9 @@ class PmntsConfigProvider implements ConfigProviderInterface
     {
         $config = [
             'payment' => [
-                'pmntsGateway' => [
-                    'iframeSrc' => $this->getIframeSrc()
+                'pmnts_gateway' => [
+                    'iframeSrc' => $this->getIframeSrc(),
+                    'isIframeEnabled' => $this->getIframeEnabled()
                 ]
             ]
         ];
@@ -42,7 +43,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
     }
 
     private function getConfigValue($key) {
-      return $this->method->getValue("payment/pmnts_gateway/$key");
+      return $this->method->getConfigData($key);
     }
 
     private function getIframeEnabled() {
@@ -54,7 +55,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
         $username = $this->getConfigValue("username");
         $shared_secret = $this->getConfigValue("shared_secret");
         $nonce = substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 5)), 0, 5);
-        $hash_payload = "$nonce:100.25:AUD";
+        $hash_payload = "{$nonce}:1.0:AUD";
         $hash = hash_hmac ("md5", $hash_payload, $shared_secret);
 
         $base_url = "https://paynow.pmnts.io";

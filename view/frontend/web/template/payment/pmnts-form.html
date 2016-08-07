@@ -28,7 +28,12 @@
         </div>
 
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
+          <!-- ko if: isIframeEnabled() -->
+            <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" />
+          <!-- /ko -->
+          <!-- ko ifnot: isIframeEnabled() -->
             <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
+          <!-- /ko -->
         </form>
 
         <div class="checkout-agreements-block">
