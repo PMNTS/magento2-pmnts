@@ -116,7 +116,7 @@
 		* @param string $cvv the card verification value - optional but recommended
 		* @return \StdObject
 		*/
-		public function token_purchase($token, $amount, $reference, $cvv = null) {
+		public function token_purchase($token, $amount, $reference, $cvv = null, $fraud_data = null) {
 			$customer_ip = $this->get_customer_ip();
 
 			if (function_exists('bcmul')) {
@@ -132,6 +132,10 @@
 				"amount" => $int_amount,
 				"reference" => $reference
 				);
+
+				if (!is_null($fraud)) {
+					$payload['fraud'] = $fraud;
+				}
 			return $this->do_request("POST", "/purchases", $payload);
 		}
 
@@ -400,7 +404,7 @@
 
 		/**
 		* Fetches the customers 'real' IP address (i.e. pulls out the address from X-Forwarded-For if present)
-		* 
+		*
 		* @return String the customers IP address
 		*/
 		private function get_customer_ip() {
@@ -499,7 +503,7 @@
 				$multiplied = round($amount * 100);
 				$int_amount = (int)$multiplied;
 			}
-			
+
 			$data = array(
 				"card_holder" => $this->card_holder,
 				"card_number" => $this->card_number,
