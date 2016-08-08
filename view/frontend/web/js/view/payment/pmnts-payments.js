@@ -21,7 +21,7 @@ define(
         rendererList.push(
             {
                 type: 'pmnts_gateway',
-                component: 'pmnts_gateway/js/view/payment/method-renderer/pmnts-method'
+                component: 'PMNTS_Gateway/js/view/payment/method-renderer/pmnts-method'
             }
         );
         /** Add view logic here if needed */

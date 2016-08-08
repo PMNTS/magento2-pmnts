@@ -30,6 +30,8 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     protected $_minAmount = null;
     protected $_maxAmount = null;
 
+    protected $_storeManager;
+
     protected $_username;
     protected $_token;
     protected $_secret;
@@ -50,6 +52,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Magento\Directory\Model\CountryFactory $countryFactory,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         array $data = array()
     )
     {
@@ -75,6 +78,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_secret      = $this->getConfigData('shared_secret');
         $this->is_sandbox   = $this->getConfigData('sandbox_mode');
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
+        $this->_storeManager = $storeManager;
 
         $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
     }
@@ -87,140 +91,126 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $customerid = $order->getCustomerId();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 
-        try {
-            $requestData = [
-                'amount'        => $amount,
-                'currency'      => strtolower($order->getBaseCurrencyCode()),
-                'description'   => sprintf('#%s, %s', $order->getIncrementId(), $order->getCustomerEmail()),
-                'card'          => [
-                    'number'            => $payment->getCcNumber(),
-                    'exp_month'         => sprintf('%02d',$payment->getCcExpMonth()),
-                    'exp_year'          => $payment->getCcExpYear(),
-                    'cvc'               => $payment->getCcCid(),
-                    'name'              => $billing->getName(),
-                    'address_line1'     => $billing->getStreetLine(1),
-                    'address_line2'     => $billing->getStreetLine(2),
-                    'address_city'      => $billing->getCity(),
-                    'address_zip'       => $billing->getPostcode(),
-                    'address_state'     => $billing->getRegion(),
-                    'address_country'   => $billing->getCountryId(),
-                ]
-            ];
+        $requestData = [
+            'amount'        => $amount,
+            'currency'      => strtolower($order->getBaseCurrencyCode()),
+            'description'   => sprintf('#%s, %s', $order->getIncrementId(), $order->getCustomerEmail()),
+            'card'          => [
+                'number'            => $payment->getCcNumber(),
+                'exp_month'         => sprintf('%02d',$payment->getCcExpMonth()),
+                'exp_year'          => $payment->getCcExpYear(),
+                'cvc'               => $payment->getCcCid(),
+                'name'              => $billing->getName(),
+                'address_line1'     => $billing->getStreetLine(1),
+                'address_line2'     => $billing->getStreetLine(2),
+                'address_city'      => $billing->getCity(),
+                'address_zip'       => $billing->getPostcode(),
+                'address_state'     => $billing->getRegion(),
+                'address_country'   => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId())
+            ]
+        ];
 
-            if ($this->check_for_fraud === 1) {
-                if (!$order->getCustomerIsGuest()) {
-                    $existing_customer = 'true';
-                    $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
-                    $customer_created_at = date('c', strtotime($customer->getCreatedAt()));
+        if ($this->check_for_fraud) {
+            if (!$order->getCustomerIsGuest()) {
+                $existing_customer = true;
+                $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
+                $customer_created_at = date('c', strtotime($customer->getCreatedAt()));
 
-                    if ($customer->getDob() != '') {
-                        $customer_dob = date('c', strtotime($customer->getDob()));
-                    } else {
-                        $customer_dob = '';
-                    }
+                if ($customer->getDob() != '') {
+                    $customer_dob = date('c', strtotime($customer->getDob()));
                 } else {
-                    $existing_customer = 'false';
-                    $customer_created_at = '';
                     $customer_dob = '';
                 }
+            } else {
+                $existing_customer = false;
+                $customer_created_at = '';
+                $customer_dob = '';
+            }
 
 
-                $ordered_items = $order->getAllItems();
-                foreach ($ordered_items as $item) {
-                    $item_name = $item->getName();
-                    $item_id = $item->getProductId();
-                    $_newProduct = $item->getProduct();
-                    $item_sku = $_newProduct->getSku();
-                    $order_items[] = array("cost" => (float)$item->getPrice(),
-                                           "description" => $this->cleanForFraud($item_name, self::RE_ANS, 26),
-                                           "line_total" => (float)$item->getRowTotalInclTax(),
-                                           "product_code" => $this->cleanForFraud($item_id, self::RE_ANS, 12, 'left'),
-                                           "qty" => (int)$item->getQtyOrdered(),
-                                           "sku" => $this->cleanForFraud($item_sku, self::RE_ANS, 12, 'left'));
-                }
+            $ordered_items = $order->getAllItems();
+            foreach ($ordered_items as $item) {
+                $item_name = $item->getName();
+                $item_id = $item->getProductId();
+                $_newProduct = $item->getProduct();
+                $item_sku = $_newProduct->getSku();
+                $order_items[] = array("cost" => (float)$item->getPrice(),
+                                       "description" => $this->cleanForFraud($item_name, self::RE_ANS, 26),
+                                       "line_total" => (float)$item->getRowTotalInclTax(),
+                                       "product_code" => $this->cleanForFraud($item_id, self::RE_ANS, 12, 'left'),
+                                       "qty" => (int)$item->getQtyOrdered(),
+                                       "sku" => $this->cleanForFraud($item_sku, self::RE_ANS, 12, 'left'));
+            }
 
-                $fraud_data = [
-                    "customer" =>
-                        array(
-                            "address_1" => $this->cleanForFraud($billing->getStreetFull(), self::RE_ANS, 30),
-                            "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                            "country" => $this->cleanForFraud($billing->getCountry(), self::RE_AN, 3),
-                            "created_at" => $customer_created_at,
-                            "date_of_birth" => $customer_dob,
-                            "email" => $order->getCustomerEmail(),
-                            "existing_customer" => $existing_customer,
-                            "first_name" => $this->cleanForFraud($order->getCustomerFirstname(), self::RE_ANS, 30),
-                            "home_phone" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
-                            "id" => $this->cleanForFraud($customerid, self::RE_ANS, 16),
-                            "last_name" => $this->cleanForFraud($order->getCustomerLastname(), self::RE_ANS, 30),
-                            "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9)
-                        ),
-                    "device_id" => isset($_POST['payment']['io_bb']) ? $_POST['payment']['io_bb'] : '',
-                    "items" => $order_items,
-                    "recipients" => array(
-                        array("address_1" => $this->cleanForFraud($billing->getStreetFull(), self::RE_ANS, 30),
-                              "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                              "country" => $this->cleanForFraud($billing->getCountryId(), self::RE_AN, 3),
-                              "email" => $billing->getEmail(),
-                              "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
-                              "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
-                              "phone_number" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
-                              "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9),
-                              "state" => $this->stateMap($billing->getRegion())
-                        )
+            $fraud_data = [
+                "customer" =>
+                    array(
+                        "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
+                        "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
+                        "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                        "created_at" => $customer_created_at,
+                        "date_of_birth" => $customer_dob,
+                        "email" => $order->getCustomerEmail(),
+                        "existing_customer" => $existing_customer,
+                        "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
+                        "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
+                        "home_phone" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
+                        "id" => $this->cleanForFraud($customerid, self::RE_ANS, 16),
+                        "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9)
                     ),
-                    "custom" => array("3" => "Facebook"),
-                    "website" => ''
-                ];
+                "device_id" => isset($_POST['payment']['io_bb']) ? $_POST['payment']['io_bb'] : '',
+                "items" => $order_items,
+                "recipients" => array(
+                    array("address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
+                          "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
+                          "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                          "email" => $billing->getEmail(),
+                          "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
+                          "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
+                          "phone_number" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
+                          "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9),
+                          "state" => $this->stateMap($billing->getRegion())
+                    )
+                ),
+                "website" => $this->_storeManager->getStore()->getBaseUrl()
+            ];
 
-                if (!is_null($shipping)) {
-                    $fraud_data["shipping_address"] = array(
-                        "address_1" => $this->cleanForFraud($shipping->getStreetFull(), self::RE_ANS, 30),
-                        "city" => $this->cleanForFraud($shipping->getCity(), self::RE_ANS, 20),
-                        "country" => $this->cleanForFraud($shipping->getCountryId(), self::RE_AN, 3),
-                        "email" => $shipping->getEmail(),
-                        "first_name" => $this->cleanForFraud($shipping->getFirstname(), self::RE_ANS, 30),
-                        "last_name" => $this->cleanForFraud($shipping->getLastname(), self::RE_ANS, 30),
-                        "home_phone" => $this->cleanForFraud($shipping->getTelephone(), self::RE_NUMBER, 19),
-                        "post_code" => $this->cleanForFraud($shipping->getPostcode(), self::RE_AN, 9),
-                        "shipping_method" => $this->getFraudShippingMethod($order)
-                    );
-                }
-            } else {
-                $fraud_data = null;
+            if (!is_null($shipping)) {
+                $fraud_data["shipping_address"] = array(
+                    "address_1" => $this->cleanForFraud($shipping->getStreetLine(1) . ' ' . $shipping->getStreetLine(2), self::RE_ANS, 30),
+                    "city" => $this->cleanForFraud($shipping->getCity(), self::RE_ANS, 20),
+                    "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                    "email" => $shipping->getEmail(),
+                    "first_name" => $this->cleanForFraud($shipping->getFirstname(), self::RE_ANS, 30),
+                    "last_name" => $this->cleanForFraud($shipping->getLastname(), self::RE_ANS, 30),
+                    "home_phone" => $this->cleanForFraud($shipping->getTelephone(), self::RE_NUMBER, 19),
+                    "post_code" => $this->cleanForFraud($shipping->getPostcode(), self::RE_AN, 9),
+                    "shipping_method" => $this->getFraudShippingMethod($order)
+                );
             }
+        } else {
+            $fraud_data = null;
+        }
+        $purchase_request = new \FatZebra\PurchaseRequest(
+            $requestData['amount'],
+            $order->getIncrementId(),
+            $billing->getName(),
+            $payment->getCcNumber(),
+            sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),
+            $payment->getCcCid(),
+            $fraud_data
+        );
 
-            $purchase_request = new \FatZebra\PurchaseRequest(
-                $requestData['amount'],
-                $order->getIncrementId(),
-                $billing->getName(),
-                $payment->getCcNumber(),
-                sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),
-                $payment->getCcCid(),
-                $fraud_data
-            );
+        $result = $this->_GatewayApi->purchase($purchase_request);
 
-            $result = $this->_GatewayApi->purchase($purchase_request);
-
-            if ($result->successful && $result->response->successful) {
-                // $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                // $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
-                // $customerData = $customer->getDataModel();
-                // $customerData->setCustomAttribute('gateway_token', $result->response->card_token);
-                // $customerData->setCustomAttribute('gateway_masked_card_number', $result->response->card_number);
-                // $customerData->setCustomAttribute('gateway_expiry_date', $result->response->card_expiry);
-                // $customer->updateData($customerData);
-                // $customer->save();
-
-                 $payment->setTransactionId($result->response->id)->setIsTransactionClosed(0);
-            } else if ($result->successful) {
-                throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . $result->response->message));
-            } else {
-                throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . implode(", ", $result->errors)));
-            }
-        } catch (\Exception $e) {
-            $this->_logger->addError(__('Payment capturing error.' . $e->getMessage()));
-            throw new \Magento\Framework\Validator\Exception(__('Payment capturing error.'));
+        if ($result->successful && $result->response->successful) {
+             $payment->setTransactionId($result->response->id)->setIsTransactionClosed(1);
+             $this->saveFraudResponse($payment, $order, $result);
+        } else if ($result->successful) {
+            $this->saveFraudResponse($payment, $order, $result);
+            throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . $result->response->message));
+        } else {
+            throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . implode(", ", $result->errors)));
         }
 
         return $this;
@@ -229,34 +219,51 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
         $transactionId = $payment->getParentTransactionId();
+        $order = $payment->getOrder();
 
-        try {
-            $order = $payment->getOrder();
+        $requestData = [
+            'transaction_id'    => $transactionId,
+            'amount'            => $amount,
+            'reference_id'      => $order->getIncrementId() . '-' . time()
+        ];
 
-            $requestData = [
-                'transaction_id'    => $transactionId,
-                'amount'            => $amount,
-                'reference_id'      => $order->getIncrementId()
-            ];
-
-            $result = $this->_GatewayApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);
-            if ($result->successful) {
-            } else {
-                throw new \Magento\Framework\Validator\Exception(__('Payment refunding error.'));
-            }
-
-        } catch (\Exception $e) {
-            $this->_logger->addError(__('Payment refunding error.'));
-            throw new \Magento\Framework\Validator\Exception(__('Payment refunding error.'));
+        $result = $this->_GatewayApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);
+        if ($result->successful && $result->response->successful) {
+          $payment
+              ->setTransactionId($result->response->id)
+              ->setParentTransactionId($transactionId)
+              ->setIsTransactionClosed(1)
+              ->setShouldCloseParentTransaction(1);
+        } elseif ($result->successful) {
+            throw new \Magento\Framework\Validator\Exception(__('Payment refunding error - ' . $result->response->message));
+        } else {
+            throw new \Magento\Framework\Validator\Exception(__('Payment refunding error - ' . implode(', ', $result->errors)));
         }
 
-        $payment
-            ->setTransactionId($transactionId . '-' . \Magento\Sales\Model\Order\Payment\Transaction::TYPE_REFUND)
-            ->setParentTransactionId($transactionId)
-            ->setIsTransactionClosed(1)
-            ->setShouldCloseParentTransaction(1);
-
         return $this;
+    }
+
+    /**
+     * Check for a negative fraud response and record the status if present
+     *
+     * @param \Magento\Payment\Model\InfoInterface $payment the payment InfoInterface
+     * @param $order the Magento order
+     * @param $result the payment gateway result
+     */
+    function saveFraudResponse(\Magento\Payment\Model\InfoInterface $payment, $order, $result) {
+      if (!$this->check_for_fraud) return false;
+      if (property_exists($result->response, 'fraud_result')) {
+          $fraud_result = strtolower($result->response->fraud_result);
+          if ($fraud_result != 'accept') {
+          $payment->setIsFraudDetected($fraud_result == 'challenge' || $fraud_result == 'deny');
+          $payment->setOrderStatePaymentReview("The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages), $result->response->id);
+          $fraudMessage = "Fraud result: " . strtoupper($fraud_result) . ". The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages);
+          $order->addStatusHistoryComment($fraudMessage);
+          return true;
+        }
+      }
+
+    	return false;
     }
 
     /**
