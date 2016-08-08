@@ -30,6 +30,8 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     protected $_minAmount = null;
     protected $_maxAmount = null;
 
+    protected $_storeManager;
+
     protected $_username;
     protected $_token;
     protected $_secret;
@@ -50,6 +52,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Magento\Directory\Model\CountryFactory $countryFactory,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         array $data = array()
     )
     {
@@ -75,6 +78,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_secret      = $this->getConfigData('shared_secret');
         $this->is_sandbox   = $this->getConfigData('sandbox_mode');
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
+        $this->_storeManager = $storeManager;
 
         $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
     }
@@ -103,13 +107,13 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                     'address_city'      => $billing->getCity(),
                     'address_zip'       => $billing->getPostcode(),
                     'address_state'     => $billing->getRegion(),
-                    'address_country'   => $billing->getCountryId(),
+                    'address_country'   => FatZebra\Helpers::iso3166_alpha3($billing->getCountryId())
                 ]
             ];
 
-            if ($this->check_for_fraud === 1) {
+            if ($this->check_for_fraud) {
                 if (!$order->getCustomerIsGuest()) {
-                    $existing_customer = 'true';
+                    $existing_customer = true;
                     $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
                     $customer_created_at = date('c', strtotime($customer->getCreatedAt()));
 
@@ -119,7 +123,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                         $customer_dob = '';
                     }
                 } else {
-                    $existing_customer = 'false';
+                    $existing_customer = false;
                     $customer_created_at = '';
                     $customer_dob = '';
                 }
@@ -142,25 +146,25 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                 $fraud_data = [
                     "customer" =>
                         array(
-                            "address_1" => $this->cleanForFraud($billing->getStreetFull(), self::RE_ANS, 30),
+                            "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
                             "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                            "country" => $this->cleanForFraud($billing->getCountry(), self::RE_AN, 3),
+                            "country" => FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
                             "created_at" => $customer_created_at,
                             "date_of_birth" => $customer_dob,
                             "email" => $order->getCustomerEmail(),
                             "existing_customer" => $existing_customer,
-                            "first_name" => $this->cleanForFraud($order->getCustomerFirstname(), self::RE_ANS, 30),
+                            "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
+                            "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
                             "home_phone" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
                             "id" => $this->cleanForFraud($customerid, self::RE_ANS, 16),
-                            "last_name" => $this->cleanForFraud($order->getCustomerLastname(), self::RE_ANS, 30),
                             "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9)
                         ),
                     "device_id" => isset($_POST['payment']['io_bb']) ? $_POST['payment']['io_bb'] : '',
                     "items" => $order_items,
                     "recipients" => array(
-                        array("address_1" => $this->cleanForFraud($billing->getStreetFull(), self::RE_ANS, 30),
+                        array("address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
                               "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                              "country" => $this->cleanForFraud($billing->getCountryId(), self::RE_AN, 3),
+                              "country" => FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
                               "email" => $billing->getEmail(),
                               "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
                               "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
@@ -169,15 +173,14 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                               "state" => $this->stateMap($billing->getRegion())
                         )
                     ),
-                    "custom" => array("3" => "Facebook"),
-                    "website" => ''
+                    "website" => $this->_storeManager->getStore()->getBaseUrl()
                 ];
 
                 if (!is_null($shipping)) {
                     $fraud_data["shipping_address"] = array(
-                        "address_1" => $this->cleanForFraud($shipping->getStreetFull(), self::RE_ANS, 30),
+                        "address_1" => $this->cleanForFraud($shipping->getStreetLine(1) . ' ' . $shipping->getStreetLine(2), self::RE_ANS, 30),
                         "city" => $this->cleanForFraud($shipping->getCity(), self::RE_ANS, 20),
-                        "country" => $this->cleanForFraud($shipping->getCountryId(), self::RE_AN, 3),
+                        "country" => FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
                         "email" => $shipping->getEmail(),
                         "first_name" => $this->cleanForFraud($shipping->getFirstname(), self::RE_ANS, 30),
                         "last_name" => $this->cleanForFraud($shipping->getLastname(), self::RE_ANS, 30),
@@ -189,7 +192,6 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             } else {
                 $fraud_data = null;
             }
-
             $purchase_request = new \FatZebra\PurchaseRequest(
                 $requestData['amount'],
                 $order->getIncrementId(),
@@ -203,17 +205,10 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             $result = $this->_GatewayApi->purchase($purchase_request);
 
             if ($result->successful && $result->response->successful) {
-                // $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-                // $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
-                // $customerData = $customer->getDataModel();
-                // $customerData->setCustomAttribute('gateway_token', $result->response->card_token);
-                // $customerData->setCustomAttribute('gateway_masked_card_number', $result->response->card_number);
-                // $customerData->setCustomAttribute('gateway_expiry_date', $result->response->card_expiry);
-                // $customer->updateData($customerData);
-                // $customer->save();
-
-                 $payment->setTransactionId($result->response->id)->setIsTransactionClosed(0);
+                 $payment->setTransactionId($result->response->id)->setIsTransactionClosed(1);
+                 $this->saveFraudResponse($payment, $order, $result);
             } else if ($result->successful) {
+                $this->saveFraudResponse($payment, $order, $result);
                 throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . $result->response->message));
             } else {
                 throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . implode(", ", $result->errors)));
@@ -257,6 +252,29 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             ->setShouldCloseParentTransaction(1);
 
         return $this;
+    }
+
+    /**
+     * Check for a negative fraud response and record the status if present
+     *
+     * @param \Magento\Payment\Model\InfoInterface $payment the payment InfoInterface
+     * @param $order the Magento order
+     * @param $result the payment gateway result
+     */
+    function saveFraudResponse(\Magento\Payment\Model\InfoInterface $payment, $order, $result) {
+      if (!$this->check_for_fraud) return false;
+      if (property_exists($result->response, 'fraud_result')) {
+          $fraud_result = strtolower($result->response->fraud_result);
+          if ($fraud_result != 'accept') {
+          $payment->setIsFraudDetected($fraud_result == 'challenge' || $fraud_result == 'deny');
+          $payment->setOrderStatePaymentReview("The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages), $result->response->id);
+          $fraudMessage = "Fraud result: " . strtoupper($fraud_result) . ". The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages);
+          $order->addStatusHistoryComment($fraudMessage);
+          return true;
+        }
+      }
+
+    	return false;
     }
 
     /**
