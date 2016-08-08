@@ -191,17 +191,26 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         } else {
             $fraud_data = null;
         }
-        $purchase_request = new \FatZebra\PurchaseRequest(
-            $requestData['amount'],
-            $order->getIncrementId(),
-            $billing->getName(),
-            $payment->getCcNumber(),
-            sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),
-            $payment->getCcCid(),
-            $fraud_data
-        );
 
-        $result = $this->_GatewayApi->purchase($purchase_request);
+        if (isset($_POST['payment']['token'])) {
+          $result = $this->_GatewayApi->token_purchase($_POST['payment']['token'],
+                                                       $requestData['amount'],
+                                                       $order->getIncrementId(),
+                                                       null,
+                                                       $fraud_data);
+        } else {
+          $purchase_request = new \FatZebra\PurchaseRequest(
+              $requestData['amount'],
+              $order->getIncrementId(),
+              $billing->getName(),
+              $payment->getCcNumber(),
+              sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),
+              $payment->getCcCid(),
+              $fraud_data
+          );
+
+          $result = $this->_GatewayApi->purchase($purchase_request);
+        }
 
         if ($result->successful && $result->response->successful) {
              $payment->setTransactionId($result->response->id)->setIsTransactionClosed(1);
