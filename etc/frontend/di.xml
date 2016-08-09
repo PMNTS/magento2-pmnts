@@ -22,7 +22,8 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="pmnts_gateway_config_provider" xsi:type="object">PMNTS\Gateway\Model\Config\PmntsConfigProvider</item>
+                <item name="pmnts_gateway_config_provider" xsi:type="object">PMNTS\Gateway\Model\ConfigProvider</item>
+                <item name="pmnts_gateway_iframe_config_provider" xsi:type="object">PMNTS\Gateway\Model\Config\PmntsConfigProvider</item>
             </argument>
         </arguments>
     </type>
