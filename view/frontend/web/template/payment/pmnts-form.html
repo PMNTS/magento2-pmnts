@@ -10,14 +10,6 @@
 -->
 
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
-  <script>
-    var io_bbout_element_id = 'io_bb';
-    var io_enable_rip = true;
-    var io_install_flash = false;
-    var io_install_stm = false;
-    var io_exclude_stm = 12;
-  </script>
-  <script data-bind="attr: {'src': getFraudFingerprintSrc()}"></script>
   <input type="hidden"
          id="io_bb"
          name="payment[io_bb]"
@@ -42,15 +34,16 @@
 
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
           <!-- ko if: isIframeEnabled() -->
-            <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" />
+            <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" frameborder="0" style="height: 300px;"/>
             <input type="hidden"
                    name="payment[token]"
                    class="input-text"
                    value=""
                    data-bind="attr: {'id': getCode() + '-token'}">
-                   <div style='display: none;'>
-                     <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
-                   </div>
+                   <input type="hidden" id="pmnts_gateway_cc_number" name="payment[cc_number]"/>
+                   <input type="hidden" id="pmnts_gateway_expiry_month" name="payment[cc_exp_month]"/>
+                   <input type="hidden" id="pmnts_gateway_expiry_year" name="payment[cc_exp_year]"/>
+                   <input type="hidden" id="pmnts_gateway_card_type" name="payment[cc_type]"/>
           <!-- /ko -->
           <!-- ko ifnot: isIframeEnabled() -->
             <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
@@ -67,12 +60,23 @@
                 <button class="action primary checkout"
                         type="submit"
                         data-bind="
-                        click: placeOrder,
+                        click: pmntsPlaceOrder,
                         attr: {title: $t('Place Order')},
                         css: {disabled: !isPlaceOrderActionAllowed()},
                         enable: (getCode() == isChecked())
                         "
                         disabled>
+                    <span data-bind="text: $t('Place Order')"></span>
+                </button>
+
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                        click: placeOrder,
+                        attr: {title: $t('Place Order')},
+                        css: {disabled: !isPlaceOrderActionAllowed()}
+                        "
+                         style="display: none;" id="default-place-order">
                     <span data-bind="text: $t('Place Order')"></span>
                 </button>
             </div>
