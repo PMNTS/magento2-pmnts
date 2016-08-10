@@ -84,8 +84,9 @@ define(
                         // Use payload.data.x
                         jQuery("#pmnts_gateway-token").val(payload.data.token);
                         jQuery('#pmnts_gateway_cc_number').val(payload.data.card_number);
-                        jQuery('#pmnts_gateway_expiry_month').val(payload.data.card_number);
-                        jQuery('#pmnts_gateway_expiry_year').val(payload.data.card_number);
+                        var expiryParts = payload.data.card_expiry.split('/');
+                        jQuery('#pmnts_gateway_expiry_month').val(expiryParts[0]);
+                        jQuery('#pmnts_gateway_expiry_year').val(expiryParts[0]);
                         jQuery('#pmnts_gateway_card_type').val('VI');
                         jQuery('#checkout-iframe').fadeOut();
                         jQuery('#default-place-order').click();
@@ -97,8 +98,9 @@ define(
                         }
                         jQuery("#pmnts_gateway-token").val(payload.token);
                         jQuery('#pmnts_gateway_cc_number').val(payload.card_number);
-                        jQuery('#pmnts_gateway_expiry_month').val(payload.card_number);
-                        jQuery('#pmnts_gateway_expiry_year').val(payload.card_number);
+                        var expiryParts = payload.card_expiry.split('/');
+                        jQuery('#pmnts_gateway_expiry_month').val(expiryParts[0]);
+                        jQuery('#pmnts_gateway_expiry_year').val(expiryParts[0])
                         jQuery('#pmnts_gateway_card_type').val('VI');
                         jQuery('#checkout-iframe').fadeOut();
                         jQuery('#default-place-order').click();
