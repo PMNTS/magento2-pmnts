@@ -41,9 +41,9 @@
                    value=""
                    data-bind="attr: {'id': getCode() + '-token'}">
                    <input type="hidden" id="pmnts_gateway_cc_number" name="payment[cc_number]"/>
-                   <input type="hidden" id="pmnts_gateway_expiry_month" name="payment[cc_exp_month]"/>
-                   <input type="hidden" id="pmnts_gateway_expiry_year" name="payment[cc_exp_year]"/>
-                   <input type="hidden" id="pmnts_gateway_card_type" name="payment[cc_type]"/>
+                   <input type="hidden" id="pmnts_gateway_expiration" name="payment[cc_exp_month]"/>
+                   <input type="hidden" id="pmnts_gateway_expiration_yr" name="payment[cc_exp_year]"/>
+                   <input type="hidden" id="pmnts_gateway_cc_type" name="payment[cc_type]"/>
           <!-- /ko -->
           <!-- ko ifnot: isIframeEnabled() -->
             <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->

@@ -10,6 +10,7 @@
 /*global define*/
 define(
     [
+        'Magento_Checkout/js/view/payment/default',
         'Magento_Payment/js/view/payment/cc-form',
         'jquery',
         'Magento_Payment/js/model/credit-card-validation/validator',
@@ -85,9 +86,9 @@ define(
                         jQuery("#pmnts_gateway-token").val(payload.data.token);
                         jQuery('#pmnts_gateway_cc_number').val(payload.data.card_number);
                         var expiryParts = payload.data.card_expiry.split('/');
-                        jQuery('#pmnts_gateway_expiry_month').val(expiryParts[0]);
-                        jQuery('#pmnts_gateway_expiry_year').val(expiryParts[0]);
-                        jQuery('#pmnts_gateway_card_type').val('VI');
+                        jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
+                        jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
+                        jQuery('#pmnts_gateway_cc_type').val('OT');
                         jQuery('#checkout-iframe').fadeOut();
                         jQuery('#default-place-order').click();
                     } else {
@@ -99,9 +100,9 @@ define(
                         jQuery("#pmnts_gateway-token").val(payload.token);
                         jQuery('#pmnts_gateway_cc_number').val(payload.card_number);
                         var expiryParts = payload.card_expiry.split('/');
-                        jQuery('#pmnts_gateway_expiry_month').val(expiryParts[0]);
-                        jQuery('#pmnts_gateway_expiry_year').val(expiryParts[0])
-                        jQuery('#pmnts_gateway_card_type').val('VI');
+                        jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
+                        jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[0])
+                        jQuery('#pmnts_gateway_cc_type').val('OT');
                         jQuery('#checkout-iframe').fadeOut();
                         jQuery('#default-place-order').click();
                     }
@@ -115,6 +116,22 @@ define(
               } else {
                 jQuery('#default-place-order').click();
               }
+            },
+            getData: function() {
+              return {
+                    'method': this.item.method,
+                    'additional_data': {
+                        "cc_cid":jQuery('#pmnts_gateway_cc_cid').val(),
+                        "cc_ss_start_month":"",
+                        "cc_ss_start_year":"",
+                        "cc_type": jQuery('#pmnts_gateway_cc_type').val(),
+                        "cc_exp_year":jQuery('#pmnts_gateway_expiration_yr').val(),
+                        "cc_exp_month":jQuery('#pmnts_gateway_expiration').val(),
+                        "cc_number":jQuery('#pmnts_gateway_cc_number').val(),
+                        "cc_token": jQuery('#pmnts_gateway-token').val(),
+                        "io_bb": jQuery("#io_bb").val()
+                    }
+                };
             }
         });
     }
