@@ -430,6 +430,9 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         )->setCcSsStartYear(
             $data->getCcSsStartYear()
         );
+
+        $info->setAdditionalInformation('pmnts_token', $data->getData('cc_token'));
+        $info->setAdditionalInformation('pmnts_device_id', $data->getData('io_bb'));
         return $this;
     }
 }
