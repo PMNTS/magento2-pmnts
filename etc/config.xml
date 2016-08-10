@@ -27,6 +27,7 @@
                 <username>TEST</username>
                 <token>TEST</token>
                 <shared_secret>033bd94b11</shared_secret>
+                <reference_prefix>M2-</reference_prefix>
             </pmnts_gateway>
         </payment>
     </default>

@@ -36,6 +36,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     protected $_token;
     protected $_secret;
     protected $is_sandbox;
+    protected $_referencePrefix = '';
 
     protected $_supportedCurrencyCodes = array('USD', 'AUD');
 
@@ -78,6 +79,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_secret      = $this->getConfigData('shared_secret');
         $this->is_sandbox   = $this->getConfigData('sandbox_mode');
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
+        $this->_referencePrefix   = $this->getConfigData('reference_prefix');
         $this->_storeManager = $storeManager;
 
         $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
@@ -196,13 +198,13 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         if (isset($ccToken)) {
           $result = $this->_GatewayApi->token_purchase($ccToken,
                                                        $requestData['amount'],
-                                                       $order->getIncrementId(),
+                                                       $this->_referencePrefix . $order->getIncrementId(),
                                                        null,
                                                        $fraud_data);
         } else {
           $purchase_request = new \FatZebra\PurchaseRequest(
               $requestData['amount'],
-              $order->getIncrementId(),
+              $this->_referencePrefix . $order->getIncrementId(),
               $billing->getName(),
               $payment->getCcNumber(),
               sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),

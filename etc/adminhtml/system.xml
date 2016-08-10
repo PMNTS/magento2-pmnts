@@ -42,6 +42,9 @@
                     <label>New Order Status</label>
                     <source_model>PMNTS\Gateway\Model\Config\Source\Order\Status\Pendingpayment</source_model>
                 </field>
+                <field id="reference_prefix" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="75" translate="label" type="text">
+                  <label>Prefix for Reference</label>
+                </field>
                 <field id="auth_type" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="80" translate="label" type="select">
                     <label>Payment Action</label>
                     <source_model>PMNTS\Gateway\Model\Source\Action</source_model>
