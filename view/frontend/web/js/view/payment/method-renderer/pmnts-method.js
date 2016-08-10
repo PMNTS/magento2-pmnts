@@ -38,7 +38,11 @@ define(
             },
 
             getIframeUrl: function() {
-              return window.checkoutConfig.payment.pmntsGateway.iframeSrc;
+              return jQuery('#change-pmnts-card').on('click', function(e) {
+                e.preventDefault();
+                jQuery('#checkout-iframe').fadeIn();
+                jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
+              });
             },
 
             isIframeEnabled: function() {
@@ -76,6 +80,23 @@ define(
                         }
                     }
 
+                    var fillIn = function(data) {
+                      jQuery("#pmnts_gateway-token").val(data.token);
+                      jQuery('#pmnts_gateway_cc_number').val(data.card_number);
+                      var expiryParts = data.card_expiry.split('/');
+                      jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
+                      jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
+                      jQuery('#pmnts_gateway_cc_type').val('OT');
+                      jQuery('#checkout-iframe').fadeOut();
+                      jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + "<a href='#' id='change-pmnts-card'>change</a></div>");
+                      jQuery('#change-pmnts-card').on('click', function(e) {
+                        e.preventDefault();
+                        jQuery('#checkout-iframe').fadeIn();
+                        jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
+                      });
+                      jQuery('#default-place-order').click();
+                    };
+
                     if ('data' in payload) {
                         if (payload.data.message == "form.invalid") {
                             alert("Validation error: " + payload.data.errors);
@@ -83,31 +104,19 @@ define(
                         }
                         // Modern browser
                         // Use payload.data.x
-                        jQuery("#pmnts_gateway-token").val(payload.data.token);
-                        jQuery('#pmnts_gateway_cc_number').val(payload.data.card_number);
-                        var expiryParts = payload.data.card_expiry.split('/');
-                        jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
-                        jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
-                        jQuery('#pmnts_gateway_cc_type').val('OT');
-                        jQuery('#checkout-iframe').fadeOut();
-                        jQuery('#default-place-order').click();
+                        fillIn(payload.data);
                     } else {
                         // Old browser don't use payload.data.x
                         if (payload.message == "form.invalid") {
                             alert("Validation error: " + payload.errors);
                             return;
                         }
-                        jQuery("#pmnts_gateway-token").val(payload.token);
-                        jQuery('#pmnts_gateway_cc_number').val(payload.card_number);
-                        var expiryParts = payload.card_expiry.split('/');
-                        jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
-                        jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[0])
-                        jQuery('#pmnts_gateway_cc_type').val('OT');
-                        jQuery('#checkout-iframe').fadeOut();
-                        jQuery('#default-place-order').click();
+                        fillIn(payload);
                     }
                 }
                 window.addEventListener ? window.addEventListener("message", receiveMessage, false) : window.attachEvent("onmessage", receiveMessage);
+
+                jQuery("#cc_summary").remove();
 
                 // Trigger the iframe
                 var iframe = document.getElementById("checkout-iframe");
