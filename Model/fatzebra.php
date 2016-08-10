@@ -133,8 +133,8 @@
 				"reference" => $reference
 				);
 
-				if (!is_null($fraud)) {
-					$payload['fraud'] = $fraud;
+				if (!is_null($fraud_data)) {
+					$payload['fraud'] = $fraud_data;
 				}
 			return $this->do_request("POST", "/purchases", $payload);
 		}
