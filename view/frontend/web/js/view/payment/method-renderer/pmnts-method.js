@@ -38,11 +38,7 @@ define(
             },
 
             getIframeUrl: function() {
-              return jQuery('#change-pmnts-card').on('click', function(e) {
-                e.preventDefault();
-                jQuery('#checkout-iframe').fadeIn();
-                jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
-              });
+              return window.checkoutConfig.payment.pmntsGateway.iframeSrc;
             },
 
             isIframeEnabled: function() {
