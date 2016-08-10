@@ -381,9 +381,55 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
     public function log($msg)
     {
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/PMNTSGateway.log');
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/ae3022bb.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         $logger->info($msg);
+    }
+
+    /**
+     * Assign data to info model instance
+     *
+     * @param \Magento\Framework\DataObject|mixed $data
+     * @return $this
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function assignData(\Magento\Framework\DataObject $data)
+    {
+        if (!$data instanceof \Magento\Framework\DataObject) {
+            $data = new \Magento\Framework\DataObject($data);
+        }
+        //var_dump($data->getData());
+        $additionalData = $data->getData('additional_data');
+        $this->log(json_encode($additionalData));
+        $data->setCcType($additionalData['cc_type']);
+        $data->setCcExpMonth($additionalData['cc_exp_month']);
+        $data->setCcExpYear($additionalData['cc_exp_year']);
+        $data->setCcNumber($additionalData['cc_number']);
+        $data->setCcLast4(substr($additionalData['cc_number'], -4));
+        $data->setCcCid($additionalData['cc_cid']);
+        $info = $this->getInfoInstance();
+        $info->setCcType(
+            $data->getCcType()
+        )->setCcOwner(
+            $data->getCcOwner()
+        )->setCcLast4(
+            substr($data->getCcNumber(), -4)
+        )->setCcNumber(
+            $data->getCcNumber()
+        )->setCcCid(
+            $data->getCcCid()
+        )->setCcExpMonth(
+            $data->getCcExpMonth()
+        )->setCcExpYear(
+            $data->getCcExpYear()
+        )->setCcSsIssue(
+            $data->getCcSsIssue()
+        )->setCcSsStartMonth(
+            $data->getCcSsStartMonth()
+        )->setCcSsStartYear(
+            $data->getCcSsStartYear()
+        );
+        return $this;
     }
 }
