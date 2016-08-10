@@ -90,6 +90,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $shipping   = $order->getShippingAddress();
         $customerid = $order->getCustomerId();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $ccToken = $payment->getAdditionalInformation('pmnts_token');
 
         $requestData = [
             'amount'        => $amount,
@@ -158,7 +159,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                         "id" => $this->cleanForFraud($customerid, self::RE_ANS, 16),
                         "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9)
                     ),
-                "device_id" => isset($_POST['payment']['io_bb']) ? $_POST['payment']['io_bb'] : '',
+                "device_id" => $payment->getAdditionalInformation('pmnts_device_id'),
                 "items" => $order_items,
                 "recipients" => array(
                     array("address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
@@ -192,8 +193,8 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             $fraud_data = null;
         }
 
-        if (isset($_POST['payment']['token'])) {
-          $result = $this->_GatewayApi->token_purchase($_POST['payment']['token'],
+        if (isset($ccToken)) {
+          $result = $this->_GatewayApi->token_purchase($ccToken,
                                                        $requestData['amount'],
                                                        $order->getIncrementId(),
                                                        null,
