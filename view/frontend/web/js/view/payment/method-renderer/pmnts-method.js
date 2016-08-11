@@ -60,7 +60,7 @@ define(
 
             customerHasSavedCC: function() {
               return window.checkoutConfig.payment.pmntsGateway.customerHasSavedCC;
-            }
+            },
 
             pmntsPlaceOrder: function() {
               if (window.checkoutConfig.payment.pmntsGateway.isIframeEnabled) {
