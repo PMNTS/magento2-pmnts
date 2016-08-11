@@ -219,6 +219,16 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         if ($result->successful && $result->response->successful) {
              $payment->setTransactionId($result->response->id)->setIsTransactionClosed(1);
              $this->saveFraudResponse($payment, $order, $result);
+
+             if (!$order->getCustomerIsGuest() && $payment->getAdditionalInformation('pmnts_cc_save')) {
+                 $existing_customer = true;
+                 $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
+                 $customer->setCustomAttributes(array(
+                   "pmnts_card_token" => $result->response->token,
+                   "pmnts_card_number" => $result->response->card_number,
+                   "pmnts_card_expiry" => $result->response->card_expiry
+                 ));
+               }
         } else if ($result->successful) {
             $this->saveFraudResponse($payment, $order, $result);
             throw new \Magento\Framework\Validator\Exception(__('Payment error - ' . $result->response->message));
@@ -441,6 +451,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
         $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
         $info->setAdditionalInformation('pmnts_device_id', $additionalData['io_bb']);
+        $info->setAdditionalInformation('pmnts_save_cc', $additionalData['cc_save']);
         return $this;
     }
 
