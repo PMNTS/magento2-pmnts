@@ -55,7 +55,7 @@ define(
             },
 
             canSaveCard: function() {
-              return window.checkoutCOnfig.payment.pmntsGateway.canSaveCard;
+              return window.checkoutConfig.payment.pmntsGateway.canSaveCard;
             },
 
             pmntsPlaceOrder: function() {
@@ -154,6 +154,7 @@ define(
                         "cc_exp_month":jQuery('#pmnts_gateway_expiration').val(),
                         "cc_number":jQuery('#pmnts_gateway_cc_number').val(),
                         "cc_token": jQuery('#pmnts_gateway-token').val(),
+                        "cc_save": jQuery("#pmnts_gateway_cc_save").is(':checked'),
                         "io_bb": jQuery("#io_bb").val()
                     }
                 };
