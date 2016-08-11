@@ -284,15 +284,15 @@ class Payment extends \Magento\Payment\Model\Method\Cc
           $order->addStatusHistoryComment($fraudMessage);
 
           //set data of fraud
-            $result = [];
-            $result['Fraud Result'] = strtoupper($fraud_result);
+            $fraud_data = [];
+            $fraud_data['Fraud Result'] = strtoupper($fraud_result);
             foreach($result->response->fraud_messages as $id => $msg) {
                 $label = 'Fraud Message ' . ($id + 1);
-                $result[$label] = $msg;
+                $fraud_data[$label] = $msg;
             }
             $payment->setTransactionAdditionalInfo(
                 \Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS,
-            $result
+            $fraud_data
             );
 
           return true;
