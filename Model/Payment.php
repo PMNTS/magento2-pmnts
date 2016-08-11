@@ -81,7 +81,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
         $this->_referencePrefix   = $this->getConfigData('reference_prefix');
         $this->_storeManager = $storeManager;
-        $this->_supportedCurrencyCodes = $this->getConfigData('currencies');
+        $this->_supportedCurrencyCodes = explode(',', $this->getConfigData('currencies'));
 
         $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
     }
