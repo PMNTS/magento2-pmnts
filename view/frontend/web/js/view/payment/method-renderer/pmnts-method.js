@@ -9,13 +9,14 @@
 /*browser:true*/
 /*global define*/
 define(
-    [
-        'Magento_Payment/js/view/payment/cc-form',
-        'jquery',
-        'Magento_Payment/js/model/credit-card-validation/validator',
-        window.checkoutConfig.payment.pmntsGateway.fraudFingerprintSrc
-    ],
-    function (Component, $) {
+  [
+      'Magento_Payment/js/view/payment/cc-form',
+      'jquery',
+      'Magento_Payment/js/model/credit-card-validation/validator',
+      'Magento_Ui/js/model/messageList',
+      window.checkoutConfig.payment.pmntsGateway.fraudFingerprintSrc
+  ],
+  function (Component, $, validator, messageList) {
         'use strict';
 
         return Component.extend({
@@ -83,7 +84,7 @@ define(
                     var payload = event.data;
                     if (typeof event.data == 'string') {
                         if (/\[object/i.test(event.data)) {
-                            alert("Sorry, it looks like there has been a problem communicating with your browsers...");
+                            messageList.addErrorMessage({message: "Sorry, it looks like there has been a problem communicating with your browsers..."});
                         }
                         var pairs = payload.split("&");
                         payload = {};
@@ -107,7 +108,7 @@ define(
 
                     if ('data' in payload) {
                         if (payload.data.message == "form.invalid") {
-                            alert("Validation error: " + payload.data.errors);
+                            messageList.addErrorMessage({message: "Validation error: " + payload.data.errors});
                             return;
                         }
                         // Modern browser
@@ -116,7 +117,7 @@ define(
                     } else {
                         // Old browser don't use payload.data.x
                         if (payload.message == "form.invalid") {
-                            alert("Validation error: " + payload.errors);
+                            messageList.addErrorMessage({message: "Validation error: " + payload.errors});
                             return;
                         }
                         fillIn(payload);
