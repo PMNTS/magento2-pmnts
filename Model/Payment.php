@@ -271,6 +271,19 @@ class Payment extends \Magento\Payment\Model\Method\Cc
           $payment->setOrderStatePaymentReview("The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages), $result->response->id);
           $fraudMessage = "Fraud result: " . strtoupper($fraud_result) . ". The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages);
           $order->addStatusHistoryComment($fraudMessage);
+
+          //set data of fraud
+            $result = [];
+            $result['Fraud Result'] = strtoupper($fraud_result);
+            foreach($fraud_msg as $id => $msg) {
+                $label = 'Fraud Message ' . ($id + 1);
+                $result[$label] = $msg;
+            }
+            $payment->setTransactionAdditionalInfo(
+                \Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS,
+            $result
+            );
+
           return true;
         }
       }
