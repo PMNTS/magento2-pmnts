@@ -395,14 +395,6 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             'ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ'), 'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
     }
 
-    public function log($msg)
-    {
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/ae3022bb.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-        $logger->info($msg);
-    }
-
     /**
      * Assign data to info model instance
      *
@@ -417,7 +409,6 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         }
         //var_dump($data->getData());
         $additionalData = $data->getData('additional_data');
-        $this->log(json_encode($additionalData));
         $data->setCcType($additionalData['cc_type']);
         $data->setCcExpMonth($additionalData['cc_exp_month']);
         $data->setCcExpYear($additionalData['cc_exp_year']);
