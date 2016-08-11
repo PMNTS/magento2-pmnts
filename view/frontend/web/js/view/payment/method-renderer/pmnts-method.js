@@ -64,6 +64,17 @@ define(
                 var postMessageStrings = false;
                 try{ window.postMessage({toString: function(){ postMessageStrings = true; }},"*") ;} catch(e){}
 
+                var cardTypeMap = function(gwType) {
+                  var types = {
+                    visa: 'VI',
+                    mastercard: 'MC',
+                    amex: 'AE',
+                    jcb: 'JCB'
+                  }
+
+                  return types[gwType.toLowerCase()];
+                };
+
                 var fillIn = function(data) {
                   jQuery("#pmnts_gateway-token").val(data.token);
                   jQuery('#pmnts_gateway_cc_number').val(data.card_number);
@@ -98,17 +109,6 @@ define(
                             payload[kv[0]] = kv[1];
                         }
                     }
-
-                    var cardTypeMap = function(gwType) {
-                      var types = {
-                        visa: 'VI',
-                        mastercard: 'MC',
-                        amex: 'AE',
-                        jcb: 'JCB'
-                      }
-
-                      return types[gwType.toLowerCase()];
-                    };
 
                     if ('data' in payload) {
                         if (payload.data.message == "form.invalid") {
