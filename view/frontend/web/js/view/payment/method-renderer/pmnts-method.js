@@ -33,6 +33,7 @@ define(
             },
 
             validate: function() {
+                if (this.isIframeEnabled()) { return true; }
                 var $form = $('#' + this.getCode() + '-form');
                 return $form.validation() && $form.validation('isValid');
             },
@@ -84,10 +85,11 @@ define(
                       jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
                       jQuery('#pmnts_gateway_cc_type').val('OT');
                       jQuery('#checkout-iframe').fadeOut();
-                      jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + "<a href='#' id='change-pmnts-card'>change</a></div>");
+                      jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + " <a href='#' id='change-pmnts-card' style='font-size: x-small;'>change</a></div>");
                       jQuery('#change-pmnts-card').on('click', function(e) {
                         e.preventDefault();
                         jQuery('#checkout-iframe').fadeIn();
+                        jQuery('#cc_summary').remove();
                         jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
                       });
                       jQuery('#default-place-order').click();
