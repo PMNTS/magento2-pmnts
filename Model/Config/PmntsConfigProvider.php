@@ -22,7 +22,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
      */
     public function __construct(
         \Magento\Payment\Helper\Data $paymentHelper
-        CurrentCustomer $currentCustomer,
+        CurrentCustomer $currentCustomer
     ) {
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->currentCustomer = $currentCustomer;
