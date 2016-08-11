@@ -63,6 +63,10 @@
                     <label>Credit Card Types</label>
                     <source_model>PMNTS\Gateway\Model\Source\Cctype</source_model>
                 </field>
+                <field id="currencies" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Accepted Currencies</label>
+                    <source_model>Magento\Config\Model\Config\Source\Locale\Currency</source_model>
+                </field>
                 <field id="allowspecific" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="110" translate="label" type="allowspecific">
                     <label>Payment from Applicable Countries</label>
                     <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
