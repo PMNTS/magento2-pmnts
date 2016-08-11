@@ -83,7 +83,7 @@ define(
                       var expiryParts = data.card_expiry.split('/');
                       jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
                       jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
-                      jQuery('#pmnts_gateway_cc_type').val('OT');
+                      jQuery('#pmnts_gateway_cc_type').val(this.cardTypeMap(data.card_type));
                       jQuery('#checkout-iframe').fadeOut();
                       jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + " <a href='#' id='change-pmnts-card' style='font-size: x-small;'>change</a></div>");
                       jQuery('#change-pmnts-card').on('click', function(e) {
@@ -123,6 +123,16 @@ define(
               } else {
                 jQuery('#default-place-order').click();
               }
+            },
+            cardTypeMap: function(gwType) {
+              var types = {
+                visa: 'VI',
+                mastercard: 'MC',
+                amex: 'AE',
+                jcb: 'JCB'
+              }
+
+              return types[gwType.toLowerCase()];
             },
             getData: function() {
               return {
