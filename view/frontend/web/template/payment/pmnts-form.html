@@ -33,6 +33,9 @@
         </div>
 
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
+          <!-- ko if: customerHasSavedCC() -->
+            <!-- CUSTOMER HAS CC -->
+          <!-- /ko -->
           <!-- ko if: isIframeEnabled() -->
             <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" frameborder="0" style="height: 330px; overflow: hidden;"/>
             <input type="hidden"

@@ -3,6 +3,7 @@
 namespace PMNTS\Gateway\Model\Config;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
+use \Magento\Customer\Helper\Session\CurrentCustomer;
 
 class PmntsConfigProvider implements ConfigProviderInterface
 {
@@ -11,18 +12,20 @@ class PmntsConfigProvider implements ConfigProviderInterface
     * @var string[]
     */
     protected $methodCode = \PMNTS\Gateway\Model\Payment::CODE;
-    /**
-    * @var \Foggyline\Paybox\Model\Paybox
-    */
     protected $method;
+    protected $currentCustomer;
+
+
 
     /**
      * @param \Magento\Payment\Helper\Data $paymentHelper
      */
     public function __construct(
         \Magento\Payment\Helper\Data $paymentHelper
+        CurrentCustomer $currentCustomer,
     ) {
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
+        $this->currentCustomer = $currentCustomer;
     }
 
 
@@ -38,7 +41,8 @@ class PmntsConfigProvider implements ConfigProviderInterface
                     'isIframeEnabled' => $this->getIframeEnabled(),
                     'fraudFingerprintSrc' => $this->getFraudFingerprintSource(),
                     'isSandbox' => $this->getIsSandbox(),
-                    'canSaveCard' => $this->canSaveCard()
+                    'canSaveCard' => $this->canSaveCard(),
+                    'customerHasSavedCC' => $this->customerHasSavedCC()
                 ]
             ]
         ];
@@ -95,6 +99,16 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
     private function canSaveCard() {
       return $this->getConfigValue('customer_save_credit_card');
+    }
+
+    private function customerHasSavedCC() {
+       $customer = $this->currentCustomer->getCustomer();
+       if (is_null($customer)) {
+         return false;
+       } else {
+         $attrs = $customer->getCustomAttributes();
+         return isset($attrs['pmnts_card_token']);
+       }
     }
 
 }
