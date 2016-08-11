@@ -37,6 +37,7 @@
                 <field id="sandbox_mode" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60" translate="label" type="select">
                     <label>Sandbox Mode</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable or disable Sandbox (Test) mode.</comment>
                 </field>
                 <field id="order_status" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="70" translate="label" type="select">
                     <label>New Order Status</label>
@@ -58,12 +59,13 @@
                     <depends>
                         <field id="iframe_tokenization">1</field>
                     </depends>
+                    <comment>URL must start with https:// and return valid CSS.</comment>
                 </field>
                 <field id="cctypes" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="100" translate="label" type="multiselect">
                     <label>Credit Card Types</label>
                     <source_model>PMNTS\Gateway\Model\Source\Cctype</source_model>
                 </field>
-                <field id="currencies" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                <field id="currencies" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Accepted Currencies</label>
                     <source_model>Magento\Config\Model\Config\Source\Locale\Currency</source_model>
                 </field>
@@ -82,10 +84,12 @@
                 <field id="customer_save_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="120" translate="label" type="select">
                     <label>Customer can save Credit Card</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Allow customers credit card tokens to be saved for future use.</comment>
                 </field>
                 <field id="fraud_detection_enabled" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="130" translate="label" type="select">
                     <label>Fraud Detection</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Fraud Detection must be enabled with the gateway prior to configuring these settings.</comment>
                 </field>
                 <field id="fraud_ship_lowcost" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="131" translate="label" type="multiselect">
                     <label>Fraud Shipping Map - Low Cost</label>
