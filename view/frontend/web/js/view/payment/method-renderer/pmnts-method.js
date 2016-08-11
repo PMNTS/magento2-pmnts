@@ -54,6 +54,10 @@ define(
               return window.checkoutConfig.payment.pmntsGateway.isSandbox;
             },
 
+            canSaveCard: function() {
+              return window.checkoutCOnfig.payment.pmntsGateway.canSaveCard;
+            },
+
             pmntsPlaceOrder: function() {
               if (window.checkoutConfig.payment.pmntsGateway.isIframeEnabled) {
                 // PostMessage

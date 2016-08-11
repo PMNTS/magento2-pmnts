@@ -37,7 +37,8 @@ class PmntsConfigProvider implements ConfigProviderInterface
                     'iframeSrc' => $this->getIframeSrc(),
                     'isIframeEnabled' => $this->getIframeEnabled(),
                     'fraudFingerprintSrc' => $this->getFraudFingerprintSource(),
-                    'isSandbox' => $this->getIsSandbox()
+                    'isSandbox' => $this->getIsSandbox(),
+                    'canSaveCard' => $this->canSaveCard()
                 ]
             ]
         ];
@@ -90,6 +91,10 @@ class PmntsConfigProvider implements ConfigProviderInterface
       $is_sandbox = $this->getConfigValue("sandbox_mode");
 
       return $is_sandbox;
+    }
+
+    private function canSaveCard() {
+      return $this->getConfigValue('customer_save_credit_card');
     }
 
 }

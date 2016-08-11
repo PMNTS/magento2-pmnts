@@ -48,6 +48,21 @@
           <!-- ko ifnot: isIframeEnabled() -->
             <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
           <!-- /ko -->
+          <!-- ko if: canSaveCard() -->
+            <div class="field">
+              <div class="control">
+                  <input type="checkbox" name="payment[cc_save]" class="input-checkbox" value="1"
+                         data-bind="attr: {
+                                          autocomplete: off,
+                                          id: getCode() + '_cc_save',
+                                          title: $t('Save Credit Card'),
+                                          'data-container': getCode() + '-cc-save'"/>
+                  <label data-bind="attr: {for: getCode() + '_cc_save'}" class="label">
+                      <span><!-- ko i18n: 'Save Credit Card'--><!-- /ko --></span>
+                  </label>
+                </div>
+            </div>
+          <!-- /ko -->
         </form>
 
         <div class="checkout-agreements-block">
