@@ -10,7 +10,6 @@
 /*global define*/
 define(
     [
-        'Magento_Checkout/js/view/payment/default',
         'Magento_Payment/js/view/payment/cc-form',
         'jquery',
         'Magento_Payment/js/model/credit-card-validation/validator',
@@ -60,6 +59,24 @@ define(
                 var postMessageStrings = false;
                 try{ window.postMessage({toString: function(){ postMessageStrings = true; }},"*") ;} catch(e){}
 
+                var fillIn = function(data) {
+                  jQuery("#pmnts_gateway-token").val(data.token);
+                  jQuery('#pmnts_gateway_cc_number').val(data.card_number);
+                  var expiryParts = data.card_expiry.split('/');
+                  jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
+                  jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
+                  jQuery('#pmnts_gateway_cc_type').val(this.cardTypeMap(data.card_type));
+                  jQuery('#checkout-iframe').fadeOut();
+                  jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + " <a href='#' id='change-pmnts-card' style='font-size: x-small;'>change</a></div>");
+                  jQuery('#change-pmnts-card').on('click', function(e) {
+                    e.preventDefault();
+                    jQuery('#checkout-iframe').fadeIn();
+                    jQuery('#cc_summary').remove();
+                    jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
+                  });
+                  jQuery('#default-place-order').click();
+                };
+
                 var receiveMessage = function(event) {
                     if (event.origin.indexOf("paynow") === -1)  return;
 
@@ -77,22 +94,15 @@ define(
                         }
                     }
 
-                    var fillIn = function(data) {
-                      jQuery("#pmnts_gateway-token").val(data.token);
-                      jQuery('#pmnts_gateway_cc_number').val(data.card_number);
-                      var expiryParts = data.card_expiry.split('/');
-                      jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
-                      jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
-                      jQuery('#pmnts_gateway_cc_type').val(this.cardTypeMap(data.card_type));
-                      jQuery('#checkout-iframe').fadeOut();
-                      jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + " <a href='#' id='change-pmnts-card' style='font-size: x-small;'>change</a></div>");
-                      jQuery('#change-pmnts-card').on('click', function(e) {
-                        e.preventDefault();
-                        jQuery('#checkout-iframe').fadeIn();
-                        jQuery('#cc_summary').remove();
-                        jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
-                      });
-                      jQuery('#default-place-order').click();
+                    var cardTypeMap = function(gwType) {
+                      var types = {
+                        visa: 'VI',
+                        mastercard: 'MC',
+                        amex: 'AE',
+                        jcb: 'JCB'
+                      }
+
+                      return types[gwType.toLowerCase()];
                     };
 
                     if ('data' in payload) {
@@ -112,6 +122,9 @@ define(
                         fillIn(payload);
                     }
                 }
+                // Clear existing events...
+                window.removeEventListener ? window.removeEventListener("message", receiveMessage) : window.detatchEvent("onmessage", receiveMessage);
+                // And add...
                 window.addEventListener ? window.addEventListener("message", receiveMessage, false) : window.attachEvent("onmessage", receiveMessage);
 
                 jQuery("#cc_summary").remove();
@@ -123,16 +136,6 @@ define(
               } else {
                 jQuery('#default-place-order').click();
               }
-            },
-            cardTypeMap: function(gwType) {
-              var types = {
-                visa: 'VI',
-                mastercard: 'MC',
-                amex: 'AE',
-                jcb: 'JCB'
-              }
-
-              return types[gwType.toLowerCase()];
             },
             getData: function() {
               return {
