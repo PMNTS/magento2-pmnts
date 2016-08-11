@@ -410,7 +410,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $data->setCcExpYear($additionalData['cc_exp_year']);
         $data->setCcNumber($additionalData['cc_number']);
         $data->setCcLast4(substr($additionalData['cc_number'], -4));
-        $data->setCcCid($additionalData['cc_cid']);
+        if (isset($additionalData['cc_cid'])) $data->setCcCid($additionalData['cc_cid']);
         $info = $this->getInfoInstance();
         $info->setCcType(
             $data->getCcType()
