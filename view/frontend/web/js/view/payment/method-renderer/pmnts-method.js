@@ -21,7 +21,7 @@ define(
 
         return Component.extend({
             defaults: {
-                template: 'pmnts_gateway/payment/pmnts-form'
+                template: 'PMNTS_Gateway/payment/pmnts-form'
             },
 
             getCode: function() {
