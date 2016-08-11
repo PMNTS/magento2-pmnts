@@ -98,11 +98,13 @@ class PmntsConfigProvider implements ConfigProviderInterface
     }
 
     private function canSaveCard() {
-      $customer = $this->currentCustomer->getCustomer();
+      $customer = $this->currentCustomer->getCustomerId();
       return !is_null($customer) && $this->getConfigValue('customer_save_credit_card');
     }
 
     private function customerHasSavedCC() {
+      $customer_id = $this->currentCustomer->getCustomerId();
+      if (!isset($customer_id)) { return false;}
        $customer = $this->currentCustomer->getCustomer();
        if (is_null($customer)) {
          return false;
