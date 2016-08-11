@@ -439,8 +439,20 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             $data->getCcSsStartYear()
         );
 
-        $info->setAdditionalInformation('pmnts_token', $data->getData('cc_token'));
-        $info->setAdditionalInformation('pmnts_device_id', $data->getData('io_bb'));
+        $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
+        $info->setAdditionalInformation('pmnts_device_id', $additionalData['io_bb']);
         return $this;
+    }
+
+    // Override validate to skip if token used...
+    public function validate() {
+      $info = $this->getInfoInstance();
+      $token = $info->getAdditionalInformation("pmnts_token");
+
+      if (isset($token)) {
+        return $this;
+      }
+
+      return parent::validate();
     }
 }
