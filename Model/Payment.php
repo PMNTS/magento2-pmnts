@@ -286,7 +286,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
           //set data of fraud
             $result = [];
             $result['Fraud Result'] = strtoupper($fraud_result);
-            foreach($fraud_msg as $id => $msg) {
+            foreach($result->response->fraud_messages as $id => $msg) {
                 $label = 'Fraud Message ' . ($id + 1);
                 $result[$label] = $msg;
             }
