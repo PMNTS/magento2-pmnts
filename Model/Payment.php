@@ -19,6 +19,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     const RE_NUMBER = "/[^\d]/";
 
     protected $_code = self::CODE;
+    protected $version = "1.0.0";
 
     protected $_isGateway                   = true;
     protected $_canCapture                  = true;
@@ -84,6 +85,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_supportedCurrencyCodes = explode(',', $this->getConfigData('currencies'));
 
         $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
+        $this->_GatewayApi->version = $this->version;
     }
 
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -94,6 +96,8 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $customerid = $order->getCustomerId();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $ccToken = $payment->getAdditionalInformation('pmnts_token');
+
+        ////////CURREMCY!!!
 
         $requestData = [
             'amount'        => $amount,
@@ -247,7 +251,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $requestData = [
             'transaction_id'    => $transactionId,
             'amount'            => $amount,
-            'reference_id'      => $order->getIncrementId() . '-' . time()
+            'reference_id'      => $this->_referencePrefix . $order->getIncrementId() . '-' . time()
         ];
 
         $result = $this->_GatewayApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);

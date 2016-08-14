@@ -361,7 +361,7 @@
 			curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
 			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 			curl_setopt($curl, CURLOPT_USERPWD, $this->username .":". $this->token);
-			curl_setopt($curl, CURLOPT_HTTPHEADER, array("User-agent: FatZebra PHP Library " . $this->version));
+			curl_setopt($curl, CURLOPT_HTTPHEADER, array("User-agent: FatZebra Magento2 Library " . $this->version));
 
 			if ($method == "POST" || $method == "PUT") {
 				curl_setopt($curl, CURLOPT_POST, true);
