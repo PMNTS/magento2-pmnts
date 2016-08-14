@@ -27,12 +27,15 @@
                 </field>
                 <field id="username" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="30" translate="label" type="text">
                     <label>Username</label>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="token" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="40" translate="label" type="text">
                     <label>Token</label>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="shared_secret" showInDefault="1" showInStore="0" showInWebsite="1" sortOrder="50" translate="label" type="text">
                     <label>Shared Secret</label>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="sandbox_mode" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="60" translate="label" type="select">
                     <label>Sandbox Mode</label>
