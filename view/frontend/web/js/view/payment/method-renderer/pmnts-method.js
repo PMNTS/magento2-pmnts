@@ -13,8 +13,7 @@ define(
       'Magento_Payment/js/view/payment/cc-form',
       'jquery',
       'Magento_Payment/js/model/credit-card-validation/validator',
-      'Magento_Ui/js/model/messageList',
-      window.checkoutConfig.payment.pmntsGateway.fraudFingerprintSrc
+      'Magento_Ui/js/model/messageList'
   ],
   function (Component, $, validator, messageList) {
         'use strict';
@@ -167,8 +166,15 @@ define(
     }
 );
 
+// Inject iovation code for device fingerprint
 var io_bbout_element_id = 'io_bb';
 var io_enable_rip = true;
 var io_install_flash = false;
 var io_install_stm = false;
 var io_exclude_stm = 12;
+
+setTimeout(function() {
+  var s = document.createElement( 'script' );
+  s.setAttribute( 'src', window.checkoutConfig.payment.pmntsGateway.fraudFingerprintSrc );
+  document.body.appendChild( s );
+}, 1000);
