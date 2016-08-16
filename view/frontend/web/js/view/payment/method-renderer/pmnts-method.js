@@ -13,9 +13,10 @@ define(
       'Magento_Payment/js/view/payment/cc-form',
       'jquery',
       'Magento_Payment/js/model/credit-card-validation/validator',
-      'Magento_Ui/js/model/messageList'
+      'Magento_Ui/js/model/messageList',
+      'Magento_Checkout/js/model/full-screen-loader'
   ],
-  function (Component, $, validator, messageList) {
+  function (Component, $, validator, messageList, fullScreenLoader) {
         'use strict';
 
         return Component.extend({
@@ -85,19 +86,12 @@ define(
                   jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
                   jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
                   jQuery('#pmnts_gateway_cc_type').val(cardTypeMap(data.card_type));
-                  jQuery('#checkout-iframe').fadeOut();
-                  jQuery("#checkout-iframe").after("<div id='cc_summary'>Card: " + data.card_number + " <a href='#' id='change-pmnts-card' style='font-size: x-small;'>change</a></div>");
-                  jQuery('#change-pmnts-card').on('click', function(e) {
-                    e.preventDefault();
-                    jQuery('#checkout-iframe').fadeIn();
-                    jQuery('#cc_summary').remove();
-                    jQuery('#checkout-iframe')[0].src = window.checkoutConfig.payment.pmntsGateway.iframeSrc;
-                  });
                   jQuery('#default-place-order').click();
                 };
 
                 var receiveMessage = function(event) {
                     if (event.origin.indexOf("paynow") === -1)  return;
+                    fullScreenLoader.stopLoader();
 
                     var payload = event.data;
                     if (typeof event.data == 'string') {
@@ -135,10 +129,9 @@ define(
                 // And add...
                 window.addEventListener ? window.addEventListener("message", receiveMessage, false) : window.attachEvent("onmessage", receiveMessage);
 
-                jQuery("#cc_summary").remove();
-
                 // Trigger the iframe
                 var iframe = document.getElementById("checkout-iframe");
+                fullScreenLoader.startLoader();
                 iframe.contentWindow.postMessage('doCheckout', '*');
 
               } else {

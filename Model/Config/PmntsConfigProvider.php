@@ -79,7 +79,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
             $base_url = "https://paynow-sandbox.pmnts.io";
         }
 
-        $url = "{$base_url}/v2/{$username}/{$nonce}/AUD/1.0/{$hash}?show_extras=false&show_email=false&iframe=true&paypal=false&tokenize_only=true&masterpass=false&visacheckout=false&hide_button=true&postmessage=true&return_target=_self";
+        $url = "{$base_url}/v2/{$username}/{$nonce}/AUD/1.0/{$hash}?show_extras=false&show_email=false&iframe=true&paypal=false&tokenize_only=true&masterpass=false&visacheckout=false&hide_button=true&postmessage=true&return_target=_self&ajax=true";
 
         // If CSS URL is set, generate signature, add to iframe URL
         $css_url = $this->getConfigValue("iframe_css");
