@@ -214,6 +214,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
               $payment->getCcNumber(),
               sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),
               $payment->getCcCid(),
+              $requestData['currency'],
               $fraud_data
           );
 

@@ -454,6 +454,11 @@
 		private $cvv = "";
 
 		/**
+		* The currency for the transaction
+		*/
+		private $currency = 'AUD';
+
+		/**
 		* Extra order data for Retail Decisions fraud detection
 		*/
 		private $fraud_data = null;
@@ -468,7 +473,7 @@
 		* @param string $cvv the card verification value
 		* @return PurchaseRequest
 		*/
-		public function __construct($amount, $reference, $card_holder, $card_number, $expiry, $cvv, $fraud_data = null) {
+		public function __construct($amount, $reference, $card_holder, $card_number, $expiry, $cvv, $currency = 'AUD', $fraud_data = null) {
 			if(is_null($amount)) throw new \InvalidArgumentException("Amount is a required field.");
 			if((float)$amount < 0) throw new \InvalidArgumentException("Amount is invalid.");
 			$this->amount = $amount;
@@ -488,6 +493,8 @@
 
 			if(is_null($cvv)) throw new \InvalidArgumentException("CVV is a required field.");
 			$this->cvv = $cvv;
+
+			$this->currency = $currency;
 
 			$this->fraud_data = $fraud_data;
 		}
@@ -510,7 +517,8 @@
 				"card_expiry" => $this->expiry,
 				"cvv" => $this->cvv,
 				"reference" => $this->reference,
-				"amount" => $int_amount
+				"amount" => $int_amount,
+				"currency" => $this->currency
 			);
 			if (!is_null($this->fraud_data)) {
 				$data['fraud'] = $this->fraud_data;
