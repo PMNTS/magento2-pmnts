@@ -428,8 +428,10 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $data->setCcType($additionalData['cc_type']);
         $data->setCcExpMonth($additionalData['cc_exp_month']);
         $data->setCcExpYear($additionalData['cc_exp_year']);
-        $data->setCcNumber($additionalData['cc_number']);
-        $data->setCcLast4(substr($additionalData['cc_number'], -4));
+        if (isset($additionalData['cc_number'])) {
+          $data->setCcNumber($additionalData['cc_number']);
+          $data->setCcLast4(substr($additionalData['cc_number'], -4));
+        }
         if (isset($additionalData['cc_cid'])) $data->setCcCid($additionalData['cc_cid']);
         $info = $this->getInfoInstance();
         $info->setCcType(
@@ -454,9 +456,9 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             $data->getCcSsStartYear()
         );
 
-        $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
-        $info->setAdditionalInformation('pmnts_device_id', $additionalData['io_bb']);
-        $info->setAdditionalInformation('pmnts_save_cc', $additionalData['cc_save']);
+        if (isset($additionalData['cc_token'])) $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
+        if (isset($additionalData['io_bb'])) $info->setAdditionalInformation('pmnts_device_id', $additionalData['io_bb']);
+        if (isset($additionalData['cc_save'])) $info->setAdditionalInformation('pmnts_save_cc', $additionalData['cc_save']);
         return $this;
     }
 
