@@ -56,8 +56,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         \Magento\Directory\Model\CountryFactory $countryFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         array $data = array()
-    )
-    {
+    ) {
         parent::__construct(
             $context,
             $registry,
@@ -88,16 +87,21 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_GatewayApi->version = $this->version;
     }
 
-    public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
+    /**
+    * Capture payment method
+    *
+    * @param InfoInterface $payment
+    * @param float $amount
+    * @return $this
+    * @throws \Magento\Framework\Exception\LocalizedException
+    */
+    public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount) {
         $order      = $payment->getOrder();
         $billing    = $order->getBillingAddress();
         $shipping   = $order->getShippingAddress();
         $customerid = $order->getCustomerId();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $ccToken = $payment->getAdditionalInformation('pmnts_token');
-
-        ////////CURREMCY!!!
 
         $requestData = [
             'amount'        => $amount,
@@ -244,8 +248,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         return $this;
     }
 
-    public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount)
-    {
+    public function refund(\Magento\Payment\Model\InfoInterface $payment, $amount) {
         $transactionId = $payment->getParentTransactionId();
         $order = $payment->getOrder();
 
@@ -313,8 +316,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
      * @param \Magento\Quote\Api\Data\CartInterface|null $quote
      * @return bool
      */
-    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
-    {
+    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null) {
         return true;
     }
 
@@ -324,8 +326,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
      * @param string $currencyCode
      * @return bool
      */
-    public function canUseForCurrency($currencyCode)
-    {
+    public function canUseForCurrency($currencyCode) {
         if (!in_array($currencyCode, $this->_supportedCurrencyCodes)) {
             return false;
         }
@@ -350,8 +351,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         }
     }
 
-    public function getFraudShippingMethod($order)
-    {
+    public function getFraudShippingMethod($order) {
         $shipping = $order->getShippingMethod();
 
         $method_lowcost = explode(',', $this->getConfigData('fraud_ship_lowcost'));
@@ -418,8 +418,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
      * @return $this
      * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function assignData(\Magento\Framework\DataObject $data)
-    {
+    public function assignData(\Magento\Framework\DataObject $data) {
         if (!$data instanceof \Magento\Framework\DataObject) {
             $data = new \Magento\Framework\DataObject($data);
         }
