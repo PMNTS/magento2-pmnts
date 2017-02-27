@@ -19,7 +19,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     const RE_NUMBER = "/[^\d]/";
 
     protected $_code = self::CODE;
-    protected $version = "1.0.0";
+    protected $version = "1.0.1";
 
     protected $_isGateway                   = true;
     protected $_canCapture                  = true;
@@ -83,7 +83,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_storeManager = $storeManager;
         $this->_supportedCurrencyCodes = explode(',', $this->getConfigData('currencies'));
 
-        $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token);
+        $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token, $this->is_sandbox);
         $this->_GatewayApi->version = $this->version;
     }
 
