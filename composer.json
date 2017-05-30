@@ -1,13 +1,5 @@
 {
     "description": "PMNTS Payment Gateway integration for Magento 2",
-    "extra": {
-        "map": [
-            [
-                "*",
-                "PMNTS/Gateway"
-            ]
-        ]
-    },
     "license": [
         "OSL-3.0"
     ],
