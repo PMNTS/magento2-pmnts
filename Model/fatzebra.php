@@ -459,7 +459,7 @@
 		private $currency = 'AUD';
 
 		/**
-		* Extra order data for Retail Decisions fraud detection
+		* Extra order data for fraud detection
 		*/
 		private $fraud_data = null;
 
