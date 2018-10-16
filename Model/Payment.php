@@ -83,7 +83,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $this->_storeManager = $storeManager;
         $this->_supportedCurrencyCodes = explode(',', $this->getConfigData('currencies'));
 
-        $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token, $this->is_sandbox);
+        $this->_configureGateway($storeManager->getStore()->getId());
         $this->_GatewayApi->version = $this->version;
     }
 
@@ -97,6 +97,8 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount) {
         $order      = $payment->getOrder();
+        // Reconfigure the gateway for the Order's store ID specific config
+        $this->_configureGateway($order->getStoreId());
         $billing    = $order->getBillingAddress();
         $shipping   = $order->getShippingAddress();
         $customerid = $order->getCustomerId();
@@ -252,6 +254,9 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $transactionId = $payment->getParentTransactionId();
         $order = $payment->getOrder();
 
+        // Reconfigure the gateway for the Order's store ID specific config
+        $this->_configureGateway($order->getStoreId());
+        
         $requestData = [
             'transaction_id'    => $transactionId,
             'amount'            => $amount,
@@ -471,5 +476,12 @@ class Payment extends \Magento\Payment\Model\Method\Cc
       }
 
       return parent::validate();
+    }
+
+    // Configure the gateway specific to the config for the store ID 
+    private function _configureGateway($storeID) {
+        $this->_username = $this->getConfigData('username', $storeID);
+        $this->_token = $this->getConfigData('token', $storeID);
+        $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token, $this->is_sandbox);
     }
 }
