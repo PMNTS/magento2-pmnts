@@ -291,7 +291,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
       if (property_exists($result->response, 'fraud_result')) {
           $fraud_result = strtolower($result->response->fraud_result);
           if ($fraud_result != 'accept') {
-          $payment->setIsFraudDetected($fraud_result == 'challenge' || $fraud_result == 'deny');
+          $payment->setIsFraudDetected($fraud_result == 'challenge' || $fraud_result == 'deny' || $fraud_result == 'error');
           $payment->setOrderStatePaymentReview("The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages), $result->response->id);
           $fraudMessage = "Fraud result: " . strtoupper($fraud_result) . ". The following rules triggered a fraud review: " . implode(',', $result->response->fraud_messages);
           $order->addStatusHistoryComment($fraudMessage);
