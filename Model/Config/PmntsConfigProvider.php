@@ -63,7 +63,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
       if ($is_sandbox) {
           return "https://gateway.pmnts-sandbox.io/fraud/fingerprint/{$username}.js";
       } else {
-        return "https://gateway.pmnts-sandbox.io/fraud/fingerprint/{$username}.js";
+        return "https://gateway.pmnts.io/fraud/fingerprint/{$username}.js";
       }
     }
 
