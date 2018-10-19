@@ -59,10 +59,11 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
     private function getFraudFingerprintSource() {
       $is_sandbox = $this->getConfigValue("sandbox_mode");
+      $username = $this->getConfigValue("username");
       if ($is_sandbox) {
-          return "https://ci-mpsnare.iovation.com/snare.js";
+          return "https://gateway.pmnts-sandbox.io/fraud/fingerprint/{$username}.js";
       } else {
-          return "https://mpsnare.iesnare.com/snare.js";
+        return "https://gateway.pmnts-sandbox.io/fraud/fingerprint/{$username}.js";
       }
     }
 
@@ -76,7 +77,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
         $base_url = "https://paynow.pmnts.io";
         if($is_sandbox) {
-            $base_url = "https://paynow-sandbox.pmnts.io";
+            $base_url = "https://paynow.pmnts-sandbox.io";
         }
 
         $url = "{$base_url}/v2/{$username}/{$nonce}/AUD/1.0/{$hash}?show_extras=false&show_email=false&iframe=true&paypal=false&tokenize_only=true&masterpass=false&visacheckout=false&hide_button=true&postmessage=true&return_target=_self&ajax=true";

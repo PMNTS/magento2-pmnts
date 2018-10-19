@@ -461,7 +461,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         );
 
         if (isset($additionalData['cc_token'])) $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
-        if (isset($additionalData['io_bb'])) $info->setAdditionalInformation('pmnts_device_id', $additionalData['io_bb']);
+        if (isset($additionalData['pmnts_id'])) $info->setAdditionalInformation('pmnts_device_id', $additionalData['pmnts_id']);
         if (isset($additionalData['cc_save'])) $info->setAdditionalInformation('pmnts_save_cc', $additionalData['cc_save']);
         return $this;
     }
