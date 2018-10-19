@@ -5,19 +5,20 @@ Overview
 --------
 The PMNTS Magento 2 module provides a simple integration method for Magento 2.0 with the Fat Zebra, Cloud Payments and PMNTS gateway services. This module includes support for the following functionality:
 
-•	Standard payments through the Gateway API
-•	IFRAME card details capture for de-scoping of PCI requirements
-•	Refunds of orders through Magento
-•	Fraud screening of transactions
+* Standard payments through the Gateway API
+* IFRAME card details capture for de-scoping of PCI requirements
+* Refunds of orders through Magento
+* Fraud screening of transactions
 
 The module can be configured to use either direct integration (where credit card details are transmitted through the webserver onto the gateway) or by using an iframe to capture the customers credit card and using a token in lieu of the customers card details to process the transaction. While both of these methods do not completely absolve the merchant of their PCI responsibilities the IFRAME method significantly reduces the requirements under PCI DSS1
 
 Fraud Screening of transactions is performed through the payment gateway inline with the payment request and has four possible outcomes:
-•	Accept – the fraud screening considers the transaction legitimate and the transaction is attempted with the bank.
-•	Challenge – the fraud screening considers the transaction to be moderate risk and the merchant should review the transaction and the fraud messages to determine whether to cancel/refund the order or fulfil it.
-•	Deny – the fraud screening considers the transaction to be high risk (or a predefined DENY rule has been triggered) and the order has been prevented form processing.
 
-
+* Accept – the fraud screening considers the transaction legitimate and the transaction is attempted with the bank.
+* Challenge – the fraud screening considers the transaction to be moderate risk and the merchant should review the transaction and the fraud messages to determine whether to cancel/refund the order or fulfil it.
+* Deny – the fraud screening considers the transaction to be high risk (or a predefined DENY rule has been triggered) and the order has been prevented form processing.
+
+
 Installation
 ------------
 Installation of the module can be performed using composer, or manually.
