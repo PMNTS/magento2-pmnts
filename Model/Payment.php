@@ -107,7 +107,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
         $requestData = [
             'amount'        => $amount,
-            'currency'      => strtolower($order->getBaseCurrencyCode()),
+            'currency'      => $order->getBaseCurrencyCode(), // Removed strtolower to get currency in upper case
             'description'   => sprintf('#%s, %s', $order->getIncrementId(), $order->getCustomerEmail()),
             'card'          => [
                 'number'            => $payment->getCcNumber(),

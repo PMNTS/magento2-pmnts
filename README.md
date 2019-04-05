@@ -3,7 +3,7 @@ PMNTS Magento 2 Module
 
 Overview
 --------
-The PMNTS Magento 2 module provides a simple integration method for Magento 2.0 with the Fat Zebra, Cloud Payments and PMNTS gateway services. This module includes support for the following functionality:
+The PMNTS Magento 2 module provides a simple integration method for Magento 2.x with the Fat Zebra, Cloud Payments and PMNTS gateway services. This module includes support for the following functionality:
 
 * Standard payments through the Gateway API
 * IFRAME card details capture for de-scoping of PCI requirements
