@@ -10,7 +10,7 @@
 
 namespace PMNTS\Gateway\Model;
 include('fatzebra.php');
-use Psr\Log\LoggerInterface;
+
 class Payment extends \Magento\Payment\Model\Method\Cc
 {
     const CODE = 'pmnts_gateway';
@@ -21,27 +21,21 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     protected $_code = self::CODE;
     protected $version = "1.0.1";
 
-    protected $_isGateway                   = true;
-    protected $_canCapture                  = true;
-    protected $_canCapturePartial           = true;
-    protected $_canRefund                   = true;
-    protected $_canRefundInvoicePartial     = true;
-    protected $_GatewayApi = false;
-    protected $_countryFactory;
-    protected $_minAmount = null;
-    protected $_maxAmount = null;
+    protected $isGateway               = true;
+    protected $canCapture              = true;
+    protected $canCapturePartial       = true;
+    protected $canRefund               = true;
+    protected $canRefundInvoicePartial = true;
 
-    protected $_storeManager;
+    protected $storeManager;
+    protected $countryFactory;
+    protected $referencePrefix = '';
+    protected $fraudCheck;
+    protected $gatewayApi;
 
-    protected $_username;
-    protected $_token;
-    protected $_secret;
-    protected $is_sandbox;
-    protected $_referencePrefix = '';
+    protected $supportedCurrencyCodes = [];
 
-    protected $_supportedCurrencyCodes = array();
-
-    protected $_debugReplacePrivateDataKeys = ['number', 'exp_month', 'exp_year', 'cvc'];
+    protected $debugReplacePrivateDataKeys = ['number', 'exp_month', 'exp_year', 'cvc'];
 
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -55,7 +49,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Magento\Directory\Model\CountryFactory $countryFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        array $data = array()
+        array $data = []
     ) {
         parent::__construct(
             $context,
@@ -71,37 +65,33 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             null,
             $data
         );
+        $this->countryFactory = $countryFactory;
+        $this->logger      = $logger;
+        $this->fraudCheck   = $this->getConfigData('fraud_detection_enabled');
+        $this->referencePrefix   = $this->getConfigData('reference_prefix');
+        $this->storeManager = $storeManager;
+        $this->supportedCurrencyCodes = explode(',', $this->getConfigData('currencies'));
 
-        $this->_countryFactory = $countryFactory;
-        $this->_logger_logger      = $logger;
-        $this->_username    = $this->getConfigData('username');
-        $this->_token       = $this->getConfigData('token');
-        $this->_secret      = $this->getConfigData('shared_secret');
-        $this->is_sandbox   = $this->getConfigData('sandbox_mode');
-        $this->check_for_fraud   = $this->getConfigData('fraud_detection_enabled');
-        $this->_referencePrefix   = $this->getConfigData('reference_prefix');
-        $this->_storeManager = $storeManager;
-        $this->_supportedCurrencyCodes = explode(',', $this->getConfigData('currencies'));
-
-        $this->_configureGateway($storeManager->getStore()->getId());
-        $this->_GatewayApi->version = $this->version;
+        $this->gatewayApi = $this->configureGateway($storeManager->getStore()->getId());
+        $this->gatewayApi->version = $this->version;
     }
 
     /**
     * Capture payment method
     *
-    * @param InfoInterface $payment
+    * @param \Magento\Payment\Model\InfoInterface $payment
     * @param float $amount
     * @return $this
     * @throws \Magento\Framework\Exception\LocalizedException
     */
     public function capture(\Magento\Payment\Model\InfoInterface $payment, $amount) {
+        /** @var \Magento\Sales\Model\Order $order */
         $order      = $payment->getOrder();
         // Reconfigure the gateway for the Order's store ID specific config
-        $this->_configureGateway($order->getStoreId());
+        $this->configureGateway($order->getStoreId());
         $billing    = $order->getBillingAddress();
         $shipping   = $order->getShippingAddress();
-        $customerid = $order->getCustomerId();
+        $customerId = $order->getCustomerId();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $ccToken = $payment->getAdditionalInformation('pmnts_token');
 
@@ -124,73 +114,77 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             ]
         ];
 
-        if ($this->check_for_fraud) {
+        if ($this->fraudCheck) {
             if (!$order->getCustomerIsGuest()) {
                 $existing_customer = true;
-                $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
-                $customer_created_at = date('c', strtotime($customer->getCreatedAt()));
+                $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerId);
+                $customerCreatedAt = date('c', strtotime($customer->getCreatedAt()));
 
                 if ($customer->getDob() != '') {
-                    $customer_dob = date('c', strtotime($customer->getDob()));
+                    $customerDob = date('c', strtotime($customer->getDob()));
                 } else {
-                    $customer_dob = '';
+                    $customerDob = '';
                 }
             } else {
                 $existing_customer = false;
-                $customer_created_at = '';
-                $customer_dob = '';
+                $customerCreatedAt = '';
+                $customerDob = '';
             }
 
 
-            $ordered_items = $order->getAllItems();
-            foreach ($ordered_items as $item) {
+            $orderItems = [];
+
+            foreach ($order->getAllItems() as $item) {
                 $item_name = $item->getName();
                 $item_id = $item->getProductId();
                 $_newProduct = $item->getProduct();
                 $item_sku = $_newProduct->getSku();
-                $order_items[] = array("cost" => (float)$item->getPrice(),
-                                       "description" => $this->cleanForFraud($item_name, self::RE_ANS, 26),
-                                       "line_total" => (float)$item->getRowTotalInclTax(),
-                                       "product_code" => $this->cleanForFraud($item_id, self::RE_ANS, 12, 'left'),
-                                       "qty" => (int)$item->getQtyOrdered(),
-                                       "sku" => $this->cleanForFraud($item_sku, self::RE_ANS, 12, 'left'));
+                $orderItems[] = [
+                    "cost" => (float)$item->getPrice(),
+                    "description" => $this->cleanForFraud($item_name, self::RE_ANS, 26),
+                    "line_total" => (float)$item->getRowTotalInclTax(),
+                    "product_code" => $this->cleanForFraud($item_id, self::RE_ANS, 12, 'left'),
+                    "qty" => (int)$item->getQtyOrdered(),
+                    "sku" => $this->cleanForFraud($item_sku, self::RE_ANS, 12, 'left')
+                ];
             }
 
             $fraud_data = [
                 "customer" =>
-                    array(
+                    [
                         "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
                         "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
                         "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
-                        "created_at" => $customer_created_at,
-                        "date_of_birth" => $customer_dob,
+                        "created_at" => $customerCreatedAt,
+                        "date_of_birth" => $customerDob,
                         "email" => $order->getCustomerEmail(),
                         "existing_customer" => $existing_customer,
                         "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
                         "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
                         "home_phone" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
-                        "id" => $this->cleanForFraud($customerid, self::RE_ANS, 16),
+                        "id" => $this->cleanForFraud($customerId, self::RE_ANS, 16),
                         "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9)
-                    ),
+                    ],
                 "device_id" => $payment->getAdditionalInformation('pmnts_device_id'),
-                "items" => $order_items,
-                "recipients" => array(
-                    array("address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
-                          "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                          "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
-                          "email" => $billing->getEmail(),
-                          "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
-                          "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
-                          "phone_number" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
-                          "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9),
-                          "state" => $this->stateMap($billing->getRegion())
-                    )
-                ),
-                "website" => $this->_storeManager->getStore()->getBaseUrl()
+                "items" => $orderItems,
+                "recipients" => [
+                    [
+                        "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
+                        "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
+                        "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                        "email" => $billing->getEmail(),
+                        "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
+                        "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
+                        "phone_number" => $this->cleanForFraud($billing->getTelephone(), self::RE_NUMBER, 19),
+                        "post_code" => $this->cleanForFraud($billing->getPostcode(), self::RE_AN, 9),
+                        "state" => $this->stateMap($billing->getRegion())
+                    ]
+                ],
+                "website" => $this->storeManager->getStore()->getBaseUrl()
             ];
 
             if (!is_null($shipping)) {
-                $fraud_data["shipping_address"] = array(
+                $fraud_data["shipping_address"] = [
                     "address_1" => $this->cleanForFraud($shipping->getStreetLine(1) . ' ' . $shipping->getStreetLine(2), self::RE_ANS, 30),
                     "city" => $this->cleanForFraud($shipping->getCity(), self::RE_ANS, 20),
                     "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
@@ -200,22 +194,24 @@ class Payment extends \Magento\Payment\Model\Method\Cc
                     "home_phone" => $this->cleanForFraud($shipping->getTelephone(), self::RE_NUMBER, 19),
                     "post_code" => $this->cleanForFraud($shipping->getPostcode(), self::RE_AN, 9),
                     "shipping_method" => $this->getFraudShippingMethod($order)
-                );
+                ];
             }
         } else {
             $fraud_data = null;
         }
 
         if (isset($ccToken)) {
-          $result = $this->_GatewayApi->token_purchase($ccToken,
-                                                       $requestData['amount'],
-                                                       $this->_referencePrefix . $order->getIncrementId(),
-                                                       null,
-                                                       $fraud_data);
+          $result = $this->gatewayApi->token_purchase(
+              $ccToken,
+              $requestData['amount'],
+              $this->referencePrefix . $order->getIncrementId(),
+              null,
+              $fraud_data
+          );
         } else {
           $purchase_request = new \FatZebra\PurchaseRequest(
               $requestData['amount'],
-              $this->_referencePrefix . $order->getIncrementId(),
+              $this->referencePrefix . $order->getIncrementId(),
               $billing->getName(),
               $payment->getCcNumber(),
               sprintf('%02d',$payment->getCcExpMonth()) ."/". $payment->getCcExpYear(),
@@ -224,7 +220,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
               $fraud_data
           );
 
-          $result = $this->_GatewayApi->purchase($purchase_request);
+          $result = $this->gatewayApi->purchase($purchase_request);
         }
 
         if ($result->successful && $result->response->successful) {
@@ -233,12 +229,12 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
              if (!$order->getCustomerIsGuest() && $payment->getAdditionalInformation('pmnts_cc_save')) {
                  $existing_customer = true;
-                 $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerid);
-                 $customer->setCustomAttributes(array(
+                 $customer = $objectManager->create('Magento\Customer\Model\Customer')->load($customerId);
+                 $customer->setCustomAttributes([
                    "pmnts_card_token" => $result->response->token,
                    "pmnts_card_number" => $result->response->card_number,
                    "pmnts_card_expiry" => $result->response->card_expiry
-                 ));
+                 ]);
                }
         } else if ($result->successful) {
             $this->saveFraudResponse($payment, $order, $result);
@@ -255,15 +251,15 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         $order = $payment->getOrder();
 
         // Reconfigure the gateway for the Order's store ID specific config
-        $this->_configureGateway($order->getStoreId());
+        $this->configureGateway($order->getStoreId());
         
         $requestData = [
             'transaction_id'    => $transactionId,
             'amount'            => $amount,
-            'reference_id'      => $this->_referencePrefix . $order->getIncrementId() . '-' . time()
+            'reference_id'      => $this->referencePrefix . $order->getIncrementId() . '-' . time()
         ];
 
-        $result = $this->_GatewayApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);
+        $result = $this->gatewayApi->refund($requestData['transaction_id'], $requestData['amount'], $requestData['reference_id']);
         if ($result->successful && $result->response->successful) {
           $payment
               ->setTransactionId($result->response->id)
@@ -283,11 +279,12 @@ class Payment extends \Magento\Payment\Model\Method\Cc
      * Check for a negative fraud response and record the status if present
      *
      * @param \Magento\Payment\Model\InfoInterface $payment the payment InfoInterface
-     * @param $order the Magento order
-     * @param $result the payment gateway result
+     * @param \Magento\Sales\Model\Order $order
+     * @param Object $result the payment gateway result
+     * @return boolean
      */
     function saveFraudResponse(\Magento\Payment\Model\InfoInterface $payment, $order, $result) {
-      if (!$this->check_for_fraud) return false;
+      if (!$this->fraudCheck) return false;
       if (property_exists($result->response, 'fraud_result')) {
           $fraud_result = strtolower($result->response->fraud_result);
           if ($fraud_result != 'accept') {
@@ -332,7 +329,7 @@ class Payment extends \Magento\Payment\Model\Method\Cc
      * @return bool
      */
     public function canUseForCurrency($currencyCode) {
-        if (!in_array($currencyCode, $this->_supportedCurrencyCodes)) {
+        if (!in_array($currencyCode, $this->supportedCurrencyCodes)) {
             return false;
         }
         return true;
@@ -340,14 +337,16 @@ class Payment extends \Magento\Payment\Model\Method\Cc
 
     // Maps AU States to the codes... otherwise return the state scrubbed for fraud....
     public function stateMap($stateName) {
-        $states = array('Australia Capital Territory' => 'ACT',
-                        'New South Wales' => 'NSW',
-                        'Northern Territory' => 'NT',
-                        'Queensland' => 'QLD',
-                        'South Australia' => 'SA',
-                        'Tasmania' => 'TAS',
-                        'Victoria' => 'VIC',
-                        'Western Australia' => 'WA');
+        $states = [
+            'Australia Capital Territory' => 'ACT',
+            'New South Wales' => 'NSW',
+            'Northern Territory' => 'NT',
+            'Queensland' => 'QLD',
+            'South Australia' => 'SA',
+            'Tasmania' => 'TAS',
+            'Victoria' => 'VIC',
+            'Western Australia' => 'WA'
+        ];
 
         if (array_key_exists($stateName, $states)) {
             return $states[$stateName];
@@ -427,16 +426,20 @@ class Payment extends \Magento\Payment\Model\Method\Cc
         if (!$data instanceof \Magento\Framework\DataObject) {
             $data = new \Magento\Framework\DataObject($data);
         }
-        //var_dump($data->getData());
+
         $additionalData = $data->getData('additional_data');
         $data->setCcType($additionalData['cc_type']);
         $data->setCcExpMonth($additionalData['cc_exp_month']);
         $data->setCcExpYear($additionalData['cc_exp_year']);
+
         if (isset($additionalData['cc_number'])) {
           $data->setCcNumber($additionalData['cc_number']);
           $data->setCcLast4(substr($additionalData['cc_number'], -4));
         }
-        if (isset($additionalData['cc_cid'])) $data->setCcCid($additionalData['cc_cid']);
+        if (isset($additionalData['cc_cid'])) {
+            $data->setCcCid($additionalData['cc_cid']);
+        }
+
         $info = $this->getInfoInstance();
         $info->setCcType(
             $data->getCcType()
@@ -460,9 +463,15 @@ class Payment extends \Magento\Payment\Model\Method\Cc
             $data->getCcSsStartYear()
         );
 
-        if (isset($additionalData['cc_token'])) $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
-        if (isset($additionalData['pmnts_id'])) $info->setAdditionalInformation('pmnts_device_id', $additionalData['pmnts_id']);
-        if (isset($additionalData['cc_save'])) $info->setAdditionalInformation('pmnts_save_cc', $additionalData['cc_save']);
+        if (isset($additionalData['cc_token'])) {
+            $info->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
+        }
+        if (isset($additionalData['pmnts_id'])) {
+            $info->setAdditionalInformation('pmnts_device_id', $additionalData['pmnts_id']);
+        }
+        if (isset($additionalData['cc_save'])) {
+            $info->setAdditionalInformation('pmnts_save_cc', $additionalData['cc_save']);
+        }
         return $this;
     }
 
@@ -479,9 +488,11 @@ class Payment extends \Magento\Payment\Model\Method\Cc
     }
 
     // Configure the gateway specific to the config for the store ID 
-    private function _configureGateway($storeID) {
-        $this->_username = $this->getConfigData('username', $storeID);
-        $this->_token = $this->getConfigData('token', $storeID);
-        $this->_GatewayApi = new \FatZebra\Gateway($this->_username, $this->_token, $this->is_sandbox);
+    private function configureGateway($storeID) {
+        $username = $this->getConfigData('username', $storeID);
+        $token    = $this->getConfigData('token', $storeID);
+        $sandbox  = $this->getConfigData('sandbox_mode');
+
+        return new \FatZebra\Gateway($username, $token, $sandbox);
     }
 }
