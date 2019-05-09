@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <virtualType name="PmntsPayment" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="const">PMNTS\Gateway\Helper\Data::METHOD_CODE</argument>
+            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form\Cc</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PmntsValueHandlerPool</argument>
+            <!--<argument name="validatorPool" xsi:type="object">PmntsValidatorPool</argument>-->
+            <argument name="commandPool" xsi:type="object">PmntsCommandPool</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Commands infrastructure -->
+    <virtualType name="PmntsCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="capture" xsi:type="string">PMNTS\Gateway\Gateway\CaptureCommand</item>
+                <item name="vault_capture" xsi:type="string">PMNTS\Gateway\Gateway\VaultCaptureCommand</item>
+                <item name="refund" xsi:type="string">PMNTS\Gateway\Gateway\RefundCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PmntsValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PmntsPaymentConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsPaymentConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">PMNTS\Gateway\Helper\Data::METHOD_CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsVaultValueHandler" type="VaultPaymentDefaultValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PmntsVaultPaymentConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsVaultPaymentConfig" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PmntsPaymentConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsVaultValueHandlerPool" type="VaultPaymentValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PmntsVaultValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsVaultPaymentConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">PMNTS\Gateway\Helper\Data::VAULT_METHOD_CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsVaultProvider" type="Magento\Vault\Model\Method\Vault">
+        <arguments>
+            <argument name="config" xsi:type="object">PmntsVaultPaymentConfig</argument>
+            <argument name="vaultProvider" xsi:type="object">PmntsPayment</argument>
+            <argument name="code" xsi:type="const">PMNTS\Gateway\Helper\Data::VAULT_METHOD_CODE</argument>
+        </arguments>
+    </virtualType>
+</config>

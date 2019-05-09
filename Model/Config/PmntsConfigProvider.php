@@ -42,7 +42,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
                     'fraudFingerprintSrc' => $this->getFraudFingerprintSource(),
                     'isSandbox' => $this->getIsSandbox(),
                     'canSaveCard' => $this->canSaveCard(),
-                    'customerHasSavedCC' => $this->customerHasSavedCC()
+                    'customerHasSavedCC' => $this->customerHasSavedCC(),
                 ]
             ]
         ];

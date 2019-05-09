@@ -14,7 +14,8 @@
         <payment>
             <pmnts_gateway>
                 <active>0</active>
-                <model>PMNTS\Gateway\Model\Payment</model>
+                <model>PmntsPayment</model>
+                <!--<model>\PMNTS\Gateway\Model\Payment</model>-->
                 <payment_action>authorize_capture</payment_action>
                 <title>Credit Card</title>
                 <order_status>processing</order_status>
@@ -26,10 +27,15 @@
                 <iframe_tokenization>1</iframe_tokenization>
                 <iframe_css>https://pmnts-resources.s3.amazonaws.com/magento2/magento2-iframe.css</iframe_css>
                 <username>TEST</username>
+                <can_use_checkout>1</can_use_checkout>
                 <token>TEST</token>
                 <shared_secret>033bd94b11</shared_secret>
                 <reference_prefix>M2-</reference_prefix>
             </pmnts_gateway>
+            <pmnts_gateway_vault>
+                <model>PmntsVaultProvider</model>
+                <title>My Saved Cards</title>
+            </pmnts_gateway_vault>
         </payment>
     </default>
 </config>
