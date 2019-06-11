@@ -14,9 +14,10 @@ define(
       'jquery',
       'Magento_Payment/js/model/credit-card-validation/validator',
       'Magento_Ui/js/model/messageList',
-      'Magento_Checkout/js/model/full-screen-loader'
+      'Magento_Checkout/js/model/full-screen-loader',
+      'Magento_Vault/js/view/payment/vault-enabler'
   ],
-  function (Component, $, validator, messageList, fullScreenLoader) {
+  function (Component, $, validator, messageList, fullScreenLoader, VaultEnabler) {
         'use strict';
 
         window.pmntsGateway.messageList = messageList;
@@ -25,6 +26,19 @@ define(
         return Component.extend({
             defaults: {
                 template: 'PMNTS_Gateway/payment/pmnts-form'
+            },
+
+            initialize: function() {
+                this._super();
+                this.vaultEnabler = new VaultEnabler();
+                this.vaultEnabler.setPaymentCode(this.getVaultCode());
+            },
+
+            /**
+             * @returns {String}
+             */
+            getVaultCode: function () {
+                return window.checkoutConfig.payment['pmntsGateway'].ccVaultCode;
             },
 
             getCode: function() {
@@ -72,8 +86,9 @@ define(
                 jQuery('#default-place-order').click();
               }
             },
+
             getData: function() {
-              var data = {
+                var data = {
                     'method': this.item.method,
                     'additional_data': {
                         "cc_cid":jQuery('#pmnts_gateway_cc_cid').val(),
@@ -89,9 +104,11 @@ define(
                 };
 
                 if (!window.checkoutConfig.payment.pmntsGateway.isIframeEnabled) {
-                  data['additional_data']["cc_number"] = jQuery('#pmnts_gateway_cc_number').val();
+                    data['additional_data']["cc_number"] = jQuery('#pmnts_gateway_cc_number').val();
                 }
-              return data;
+
+                this.vaultEnabler.visitAdditionalData(data);
+                return data;
             }
         });
     }

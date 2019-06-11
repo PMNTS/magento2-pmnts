@@ -32,7 +32,7 @@
                       <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="token" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label" type="text">
+                <field id="token" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label" type="password">
                     <label>Token</label>
                     <validate>required-entry</validate>
                     <depends>
@@ -59,7 +59,7 @@
                     <label>IFRAME Tokenization</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="shared_secret" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="91" translate="label" type="text">
+                <field id="shared_secret" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="91" translate="label" type="password">
                     <label>Shared Secret</label>
                     <validate>required-entry</validate>
                     <depends>

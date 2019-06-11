@@ -43,6 +43,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
                     'isSandbox' => $this->getIsSandbox(),
                     'canSaveCard' => $this->canSaveCard(),
                     'customerHasSavedCC' => $this->customerHasSavedCC(),
+                    'ccVaultCode' => \PMNTS\Gateway\Helper\Data::VAULT_METHOD_CODE
                 ]
             ]
         ];
@@ -100,7 +101,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
     private function canSaveCard() {
       $customer = $this->currentCustomer->getCustomerId();
-      return !is_null($customer) && $this->getConfigValue('customer_save_credit_card');
+      return !is_null($customer);//TODO: && $this->c('customer_save_credit_card');
     }
 
     private function customerHasSavedCC() {

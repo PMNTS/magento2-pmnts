@@ -9,7 +9,7 @@
  */
 
 namespace PMNTS\Gateway\Model;
-include('fatzebra.php');
+include_once('fatzebra.php');
 
 class Payment extends \Magento\Payment\Model\Method\Cc
 {

@@ -27,6 +27,7 @@
         <arguments>
             <argument name="handlers" xsi:type="array">
                 <item name="default" xsi:type="string">PmntsValueHandler</item>
+                <item name="vault" xsi:type="string">PmntsVaultValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
@@ -43,15 +44,9 @@
         </arguments>
     </virtualType>
 
-    <virtualType name="PmntsVaultValueHandler" type="VaultPaymentDefaultValueHandler">
+    <virtualType name="PmntsVaultValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
             <argument name="configInterface" xsi:type="object">PmntsVaultPaymentConfig</argument>
-        </arguments>
-    </virtualType>
-
-    <virtualType name="PmntsVaultPaymentConfig" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
-        <arguments>
-            <argument name="configInterface" xsi:type="object">PmntsPaymentConfig</argument>
         </arguments>
     </virtualType>
 
