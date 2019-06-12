@@ -20,8 +20,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    public function getConfig($config_path)
+    /**
+     * @param \Magento\Sales\Model\Order $order
+     * @return string
+     */
+    public function getOrderReference($order)
     {
-        return $this->scopeConfig->getValue($config_path,  \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $merchantReference = $order->getIncrementId();
+        $prefix = $this->scopeConfig->getValue('payment/pmnts_gateway/reference_prefix', 'stores', $order->getStoreId());
+        if ($prefix) {
+            $merchantReference = $prefix . $merchantReference;
+        }
+
+        return $merchantReference;
     }
 }

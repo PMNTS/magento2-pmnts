@@ -20,7 +20,8 @@ class AssignDataObserver extends \Magento\Payment\Observer\AbstractDataAssignObs
         if (array_key_exists('cc_save', $additionalData)) {
             $paymentInfo->setAdditionalInformation('pmnts_save_token', $additionalData['cc_save']);
         }
-
-        $paymentInfo->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
+        if (array_key_exists('cc_token', $additionalData)) {
+            $paymentInfo->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
+        }
     }
 }

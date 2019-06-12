@@ -15,17 +15,25 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
     /** @var \Magento\Customer\Helper\Session\CurrentCustomer */
     protected $currentCustomer;
+    /**
+     * @var \Magento\Vault\Model\PaymentTokenManagement
+     */
+    protected $paymentTokenManagement;
 
     /**
      * @param \Magento\Payment\Helper\Data $paymentHelper
      * @param \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer
+     * @param \Magento\Vault\Model\PaymentTokenManagement $paymentTokenManagement
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function __construct(
         \Magento\Payment\Helper\Data $paymentHelper,
-        \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer
+        \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer,
+        \Magento\Vault\Model\PaymentTokenManagement $paymentTokenManagement
     ) {
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->currentCustomer = $currentCustomer;
+        $this->paymentTokenManagement = $paymentTokenManagement;
     }
 
 
@@ -106,18 +114,23 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
     private function customerHasSavedCC() {
 
-        $customer_id = $this->currentCustomer->getCustomerId();
-        if (!isset($customer_id)) {
+        $customerId = $this->currentCustomer->getCustomerId();
+        if (!isset($customerId)) {
             return false;
         }
 
         $customer = $this->currentCustomer->getCustomer();
         if (is_null($customer)) {
             return false;
-        } else {
-            $attrs = $customer->getCustomAttributes();
-            return isset($attrs['pmnts_card_token']);
         }
+        $tokens = $this->paymentTokenManagement->getVisibleAvailableTokens($customerId);
+        foreach ($tokens as $token) {
+            if ($token->getPaymentMethodCode() === \PMNTS\Gateway\Model\Payment::CODE) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

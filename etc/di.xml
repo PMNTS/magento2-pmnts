@@ -17,7 +17,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="capture" xsi:type="string">PMNTS\Gateway\Gateway\CaptureCommand</item>
-                <item name="vault_capture" xsi:type="string">PMNTS\Gateway\Gateway\VaultCaptureCommand</item>
+                <item name="vault_sale" xsi:type="string">PMNTS\Gateway\Gateway\VaultCaptureCommand</item>
                 <item name="refund" xsi:type="string">PMNTS\Gateway\Gateway\RefundCommand</item>
             </argument>
         </arguments>
@@ -69,6 +69,20 @@
             <argument name="config" xsi:type="object">PmntsVaultPaymentConfig</argument>
             <argument name="vaultProvider" xsi:type="object">PmntsPayment</argument>
             <argument name="code" xsi:type="const">PMNTS\Gateway\Helper\Data::VAULT_METHOD_CODE</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Payment\Gateway\Command\CommandManagerPool">
+        <arguments>
+            <argument name="executors" xsi:type="array">
+                <item name="pmnts_gateway" xsi:type="string">PmntsCommandManager</item>
+            </argument>
+        </arguments>
+    </type>
+    <!-- Command managers section for Vault -->
+    <virtualType name="PmntsCommandManager" type="Magento\Payment\Gateway\Command\CommandManager">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">PmntsCommandPool</argument>
         </arguments>
     </virtualType>
 </config>

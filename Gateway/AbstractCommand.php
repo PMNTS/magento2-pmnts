@@ -11,17 +11,27 @@ abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterf
     /**
      * @var ScopeConfigInterface
      */
-    private $scopeConfig;
+    protected $scopeConfig;
+    /**
+     * @var \PMNTS\Gateway\Helper\Data
+     */
+    protected $pmntsHelper;
 
     /**
      * AbstractCommand constructor.
      * @param ScopeConfigInterface $scopeConfig
+     * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      */
-    public function __construct(ScopeConfigInterface $scopeConfig)
+    public function __construct(ScopeConfigInterface $scopeConfig, \PMNTS\Gateway\Helper\Data $pmntsHelper)
     {
         $this->scopeConfig = $scopeConfig;
+        $this->pmntsHelper = $pmntsHelper;
     }
 
+    /**
+     * @param $storeId
+     * @return \FatZebra\Gateway
+     */
     public function getGateway($storeId)
     {
         $username = $this->scopeConfig->getValue('payment/pmnts_gateway/username', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
