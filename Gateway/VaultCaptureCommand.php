@@ -33,6 +33,7 @@ class VaultCaptureCommand extends AbstractCommand
      * @param array $commandSubject
      * @return void
      * @throws CommandException
+     * @throws \FatZebra\TimeoutException
      */
     public function execute(array $commandSubject)
     {
@@ -51,8 +52,16 @@ class VaultCaptureCommand extends AbstractCommand
         if ($token) {
             /** @var  \FatZebra\Gateway $gateway */
             $gateway = $this->getGateway($storeId);
-            // TODO: Build fraud data payload
-            $result = $gateway->token_purchase($token->getGatewayToken(), $commandSubject['amount'], $this->pmntsHelper->getOrderReference($order));
+            $fraudData = $this->pmntsHelper->buildFraudPayload($order);
+
+            $result = $gateway->token_purchase(
+                $token->getGatewayToken(),
+                $commandSubject['amount'],
+                $this->pmntsHelper->getOrderReference($order),
+                null,
+                $fraudData
+            );
+
             if ($result && $result->response->successful === true) {
                 $payment->setLastTransId($result->response->transaction_id);
             }
