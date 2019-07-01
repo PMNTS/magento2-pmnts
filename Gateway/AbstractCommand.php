@@ -2,35 +2,36 @@
 
 namespace PMNTS\Gateway\Gateway;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
-//TODO
-include_once('/var/www/magento/app/code/PMNTS/Gateway/Model/fatzebra.php');
-
 abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterface
 {
-    /**
-     * @var ScopeConfigInterface
-     */
+    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
     protected $scopeConfig;
-    /**
-     * @var \PMNTS\Gateway\Helper\Data
-     */
+
+    /** @var \PMNTS\Gateway\Helper\Data */
     protected $pmntsHelper;
+
+    /** @var \Pmnts\Gateway\Model\GatewayFactory */
+    protected $gatewayFactory;
 
     /**
      * AbstractCommand constructor.
-     * @param ScopeConfigInterface $scopeConfig
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
+     * @param \Pmnts\Gateway\Model\GatewayFactory $gatewayFactory
      */
-    public function __construct(ScopeConfigInterface $scopeConfig, \PMNTS\Gateway\Helper\Data $pmntsHelper)
-    {
+    public function __construct(
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \PMNTS\Gateway\Helper\Data $pmntsHelper,
+        \Pmnts\Gateway\Model\GatewayFactory $gatewayFactory
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->pmntsHelper = $pmntsHelper;
+        $this->gatewayFactory = $gatewayFactory;
     }
 
     /**
      * @param $storeId
-     * @return \FatZebra\Gateway
+     * @return \Pmnts\Gateway\Model\Gateway
      */
     public function getGateway($storeId)
     {
@@ -38,6 +39,10 @@ abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterf
         $token = $this->scopeConfig->getValue('payment/pmnts_gateway/token', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
         $sandbox = (bool)$this->scopeConfig->getValue('payment/pmnts_gateway/sandbox_mode', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
 
-        return new \FatZebra\Gateway($username, $token, $sandbox);
+        return $this->gatewayFactory->create([
+            'username' => $username,
+            'token' => $token,
+            'test_mode' => $sandbox
+        ]);
     }
 }
