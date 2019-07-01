@@ -91,14 +91,14 @@ class CaptureCommand extends AbstractCommand
         $reference = $this->pmntsHelper->getOrderReference($order);
         $fraudData = $this->pmntsHelper->buildFraudPayload($order);
 
-        /** @var \StdClass $result */
+        /** @var array $result */
         $result = $gateway->token_purchase($pmntsToken, $commandSubject['amount'], $reference, null, $fraudData);
 
-        if ($result && ($response = $result->response)) {
-            if ($response->successful === false) {
-                $errorMsg = $response->message ?: 'Unknown gateway error.';
-                if (is_array($result->errors) && count($result->errors) > 0) {
-                    $errorMsg = join('. ', $result->errors);
+        if ($result && isset($result['response'])) {
+            if ($result['response']['successful'] === false) {
+                $errorMsg = $result['response']['message'] ?: 'Unknown gateway error.';
+                if (is_array($result['errors']) && count($result['errors']) > 0) {
+                    $errorMsg = join('. ', $result['errors']);
                 }
                 throw new \Magento\Framework\Validator\Exception(__("Payment error: %1", $errorMsg));
             }
@@ -107,13 +107,13 @@ class CaptureCommand extends AbstractCommand
         }
 
         if ($payment->getAdditionalInformation('pmnts_save_token') && $order->getCustomerId()) {
-            $paymentTokenDetails = $this->getTokenDetails($result->response);
+            $paymentTokenDetails = $this->getTokenDetails($result['response']);
 
             /** @var \Magento\Vault\Model\PaymentToken $paymentToken */
             $paymentToken = $this->paymentTokenFactory->create();
             $paymentToken->setType(\Magento\Vault\Api\Data\PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
             $paymentToken->setTokenDetails($this->json->serialize($paymentTokenDetails));
-            $paymentToken->setExpiresAt(new \DateTime($result->response->card_expiry));
+            $paymentToken->setExpiresAt(new \DateTime($result['response']['card_expiry']));
             $paymentToken->setGatewayToken($pmntsToken);
             /** @var \Magento\Sales\Api\Data\OrderPaymentExtension $extension */
             $paymentExtension = $this->paymentExtensionInterfaceFactory->create();
@@ -126,18 +126,18 @@ class CaptureCommand extends AbstractCommand
     }
 
     /**
-     * @param $gatewayResponse
+     * @param array $response
      * @return array
      */
-    protected function getTokenDetails($gatewayResponse)
+    protected function getTokenDetails($response)
     {
-        $expirationDate = (new \DateTime($gatewayResponse->card_expiry))->format('m/y');
-        $cardType = $gatewayResponse->card_type;
+        $expirationDate = (new \DateTime($response['card_expiry']))->format('m/y');
+        $cardType = $response['card_type'];
         if (array_key_exists($cardType, self::$cardTypeMap)) {
             $cardType = self::$cardTypeMap[$cardType];
         }
         return [
-            'maskedCC' => substr($gatewayResponse->card_number, -4, 4),
+            'maskedCC' => substr($response['card_number'], -4, 4),
             'expirationDate' => $expirationDate,
             'type' => $cardType
         ];

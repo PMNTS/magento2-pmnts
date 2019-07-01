@@ -112,7 +112,7 @@ class Gateway
      * @param string $reference the purchase reference
      * @param string $cvv the card verification value - optional but recommended
      * @param array|null $fraud_data
-     * @return \StdClass
+     * @return array
      * @throws \Exception
      */
     public function token_purchase($token, $amount, $reference, $cvv = null, $fraud_data = null)
@@ -144,7 +144,7 @@ class Gateway
      * @param string $transaction_id the original transaction ID to be refunded
      * @param float $amount the amount to be refunded
      * @param string $reference the refund reference
-     * @return \StdClass
+     * @return array
      * @throws \Exception
      */
     public function refund($transaction_id, $amount, $reference)
@@ -187,7 +187,7 @@ class Gateway
      * @param string $method the request method ("POST" or "GET")
      * @param string $uri the request URI (e.g. /purchases, /credit_cards etc)
      * @param array $payload the request payload (if a POST request)
-     * @return \StdClass
+     * @return array
      * @throws \Exception
      */
     private function do_request($method, $uri, $payload = null)
@@ -234,7 +234,7 @@ class Gateway
         }
         curl_close($curl);
 
-        $response =  json_decode($data);
+        $response =  json_decode($data, true);
         if (is_null($response)) {
             $err = json_last_error();
             if ($err == JSON_ERROR_SYNTAX) {

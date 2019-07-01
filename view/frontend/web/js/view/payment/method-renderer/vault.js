@@ -5,7 +5,7 @@ define([
     'Magento_Vault/js/view/payment/method-renderer/vault',
     'Magento_Ui/js/model/messageList',
     'Magento_Checkout/js/model/full-screen-loader'
-], function ($, VaultComponent, globalMessageList, fullScreenLoader) {
+], function ($, VaultComponent) {
     'use strict';
 
     return VaultComponent.extend({

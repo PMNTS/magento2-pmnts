@@ -31,11 +31,7 @@
                 <sort_order>1</sort_order>
                 <iframe_tokenization>1</iframe_tokenization>
                 <iframe_css>https://pmnts-resources.s3.amazonaws.com/magento2/magento2-iframe.css</iframe_css>
-                <username>TEST</username>
                 <can_use_checkout>1</can_use_checkout>
-                <token>TEST</token>
-                <shared_secret>033bd94b11</shared_secret>
-                <reference_prefix>M2-</reference_prefix>
             </pmnts_gateway>
             <pmnts_gateway_vault>
                 <model>PmntsVaultProvider</model>

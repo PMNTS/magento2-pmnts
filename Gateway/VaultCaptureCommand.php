@@ -68,8 +68,8 @@ class VaultCaptureCommand extends AbstractCommand
                 $fraudData
             );
 
-            if ($result && $result->response->successful === true) {
-                $payment->setLastTransId($result->response->transaction_id);
+            if ($result && isset($result['response']) && $result['response']['successful'] === true) {
+                $payment->setLastTransId($result['response']['transaction_id']);
             }
         } else {
             throw new \Magento\Payment\Gateway\Command\CommandException(__('Unable to place order.'));
