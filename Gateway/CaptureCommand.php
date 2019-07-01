@@ -78,6 +78,7 @@ class CaptureCommand extends AbstractCommand
      */
     public function execute(array $commandSubject)
     {
+        /** @var \Magento\Sales\Model\Order\Payment $payment */
         $payment = $commandSubject['payment']->getPayment();
         /** @var \Magento\Sales\Model\Order $order */
         $order = $payment->getOrder();
@@ -99,7 +100,7 @@ class CaptureCommand extends AbstractCommand
                 if (is_array($result->errors) && count($result->errors) > 0) {
                     $errorMsg = join('. ', $result->errors);
                 }
-                throw new \Magento\Framework\Validator\Exception(__('Payment error: %s.', $errorMsg));
+                throw new \Magento\Framework\Validator\Exception(__("Payment error: %1", $errorMsg));
             }
         } else {
             throw new \Magento\Framework\Validator\Exception(__('Payment gateway error, please contact customer service.'));
@@ -118,6 +119,9 @@ class CaptureCommand extends AbstractCommand
             $paymentExtension = $this->paymentExtensionInterfaceFactory->create();
             $paymentExtension->setVaultPaymentToken($paymentToken);
             $payment->setExtensionAttributes($paymentExtension);
+        } else {
+            // If the customer has not opted into the token storage, do not persist it to the database
+            $payment->unsAdditionalInformation('pmnts_token');
         }
     }
 
