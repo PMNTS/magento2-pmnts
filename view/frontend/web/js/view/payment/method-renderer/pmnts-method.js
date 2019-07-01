@@ -144,7 +144,7 @@ window.pmntsGateway = {
       mastercard: 'MC',
       amex: 'AE',
       jcb: 'JCB'
-    }
+    };
 
     return types[gwType.toLowerCase()];
   },

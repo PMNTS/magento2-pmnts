@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Vault capture command
+ *
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace PMNTS\Gateway\Gateway;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;

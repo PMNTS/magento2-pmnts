@@ -28,7 +28,6 @@ namespace Pmnts\Gateway\Model;
 
 use Zend\Http\Client\Adapter\Exception\TimeoutException;
 
-require 'Helpers.php';
 /**
 * The Fat Zebra Gateway class for interfacing with Fat Zebra
 */

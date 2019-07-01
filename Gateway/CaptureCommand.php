@@ -1,28 +1,42 @@
 <?php
-
+/**
+ * Capture command (with tokenization if opted-in by customer)
+ *
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace PMNTS\Gateway\Gateway;
 
 class CaptureCommand extends AbstractCommand
 {
 
-    /**
-     * @var \Magento\Vault\Model\PaymentTokenFactory
-     */
+    /** @var \Magento\Vault\Model\PaymentTokenFactory */
     private $paymentTokenFactory;
-    /**
-     * @var \Magento\Customer\Api\CustomerRepositoryInterface
-     */
+
+    /** @var \Magento\Customer\Api\CustomerRepositoryInterface */
     private $customerRepository;
-    /**
-     * @var \Magento\Vault\Api\PaymentTokenRepositoryInterface
-     */
+
+    /** @var \Magento\Vault\Api\PaymentTokenRepositoryInterface */
     private $paymentTokenRepository;
+
+    /** @var \Magento\Framework\Serialize\Serializer\Json */
+    private $json;
+
+    /** @var \Magento\Framework\Encryption\EncryptorInterface */
+    private $encryptor;
 
     public static $cardTypeMap = [
         'MasterCard' => 'MC',
         'VISA'       => 'VI',
-        'AMEX'       => 'AE'
+        'AMEX'       => 'AE',
+        'JCB'        => 'JCB'
     ];
+    /**
+     * @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory
+     */
+    private $paymentExtensionInterfaceFactory;
 
     /**
      * CaptureCommand constructor.
@@ -31,18 +45,26 @@ class CaptureCommand extends AbstractCommand
      * @param \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
+     * @param \Magento\Framework\Serialize\Serializer\Json $json
+     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
-        \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
+        \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository,
+        \Magento\Framework\Serialize\Serializer\Json $json,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor,
+        \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
     ) {
         parent::__construct($scopeConfig, $pmntsHelper);
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->customerRepository = $customerRepository;
         $this->paymentTokenRepository = $paymentTokenRepository;
+        $this->json = $json;
+        $this->encryptor = $encryptor;
+        $this->paymentExtensionInterfaceFactory = $paymentExtensionInterfaceFactory;
     }
 
     /**
@@ -75,23 +97,23 @@ class CaptureCommand extends AbstractCommand
                 }
                 throw new \Magento\Framework\Validator\Exception(__('Payment error: %s.', $errorMsg));
             }
+        } else {
+            throw new \Magento\Framework\Validator\Exception(__('Payment gateway error, please contact customer service.'));
         }
 
         if ($payment->getAdditionalInformation('pmnts_save_token') && $order->getCustomerId()) {
-            $paymentTokenDetails = $this->getTokenDetails($result);
+            $paymentTokenDetails = $this->getTokenDetails($result->response);
 
-            try {
-                $customer = $this->customerRepository->getById($order->getCustomerId());
-            } catch (\Magento\Framework\Exception\NoSuchEntityException $ex) {
-                $customer = null;
-            }
             /** @var \Magento\Vault\Model\PaymentToken $paymentToken */
             $paymentToken = $this->paymentTokenFactory->create();
-            $paymentToken->setCustomerId($customer->getId());
             $paymentToken->setType(\Magento\Vault\Api\Data\PaymentTokenFactoryInterface::TOKEN_TYPE_CREDIT_CARD);
-            $paymentToken->setPaymentMethodCode(\PMNTS\Gateway\Helper\Data::METHOD_CODE);
-
-            $this->paymentTokenRepository->save($paymentToken);
+            $paymentToken->setTokenDetails($this->json->serialize($paymentTokenDetails));
+            $paymentToken->setExpiresAt(new \DateTime($result->response->card_expiry));
+            $paymentToken->setGatewayToken($pmntsToken);
+            /** @var \Magento\Sales\Api\Data\OrderPaymentExtension $extension */
+            $paymentExtension = $this->paymentExtensionInterfaceFactory->create();
+            $paymentExtension->setVaultPaymentToken($paymentToken);
+            $payment->setExtensionAttributes($paymentExtension);
         }
     }
 
@@ -102,13 +124,13 @@ class CaptureCommand extends AbstractCommand
     protected function getTokenDetails($gatewayResponse)
     {
         $expirationDate = (new \DateTime($gatewayResponse->card_expiry))->format('m/y');
-        $cardType = $gatewayResponse['card_type'];
+        $cardType = $gatewayResponse->card_type;
         if (array_key_exists($cardType, self::$cardTypeMap)) {
             $cardType = self::$cardTypeMap[$cardType];
         }
         return [
             'maskedCC' => substr($gatewayResponse->card_number, -4, 4),
-            'card_expiry' => $expirationDate,
+            'expirationDate' => $expirationDate,
             'type' => $cardType
         ];
     }

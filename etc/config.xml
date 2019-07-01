@@ -15,13 +15,13 @@
             <pmnts_gateway>
                 <active>0</active>
                 <model>PmntsPayment</model>
-                <!--<model>\PMNTS\Gateway\Model\Payment</model>-->
                 <payment_action>authorize_capture</payment_action>
                 <title>Credit Card</title>
                 <order_status>processing</order_status>
                 <api_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <cctypes>AE,VI,MC,JCB</cctypes>
                 <currencies>AUD</currencies>
+                <customer_save_credit_card>1</customer_save_credit_card>
                 <allowspecific>0</allowspecific>
                 <can_authorize>1</can_authorize>
                 <can_capture>1</can_capture>

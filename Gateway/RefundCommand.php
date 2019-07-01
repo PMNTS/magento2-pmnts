@@ -1,17 +1,21 @@
 <?php
-
+/**
+ * Refund command
+ *
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 namespace PMNTS\Gateway\Gateway;
-
-use Magento\Payment\Gateway\Command;
-use Magento\Payment\Gateway\Command\CommandException;
 
 class RefundCommand extends AbstractCommand
 {
 
     /**
      * @param array $commandSubject
-     * @return null|Command\ResultInterface
-     * @throws CommandException
+     * @return void
+     * @throws \Exception
      */
     public function execute(array $commandSubject)
     {
@@ -22,6 +26,6 @@ class RefundCommand extends AbstractCommand
         // At this point, we don't have a CreditMemo increment ID, so append a timestamp to ensure uniqueness in the event
         // of multiple refunds against a single invoice.
         $reference = $this->pmntsHelper->getOrderReference($payment->getOrder()) . '-R-' . (new \DateTime())->format('ymdhi');
-        $gateway->refund($payment->getLastTransId(), $commandSubject['amount'], $reference);
+        $response = $gateway->refund($payment->getLastTransId(), $commandSubject['amount'], $reference);
     }
 }

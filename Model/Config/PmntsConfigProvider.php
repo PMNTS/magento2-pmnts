@@ -36,7 +36,6 @@ class PmntsConfigProvider implements ConfigProviderInterface
         $this->paymentTokenManagement = $paymentTokenManagement;
     }
 
-
     /**
      * {@inheritdoc}
      */
@@ -58,34 +57,38 @@ class PmntsConfigProvider implements ConfigProviderInterface
         return $config;
     }
 
-    private function getConfigValue($key) {
-      return $this->method->getConfigData($key);
+    private function getConfigValue($key)
+    {
+        return $this->method->getConfigData($key);
     }
 
-    private function getIframeEnabled() {
-      return (bool)$this->getConfigValue("iframe_tokenization");
+    private function getIframeEnabled()
+    {
+        return (bool)$this->getConfigValue("iframe_tokenization");
     }
 
-    private function getFraudFingerprintSource() {
-      $is_sandbox = $this->getConfigValue("sandbox_mode");
-      $username = $this->getConfigValue("username");
-      if ($is_sandbox) {
-          return "https://gateway.pmnts-sandbox.io/fraud/fingerprint/{$username}.js";
-      } else {
-        return "https://gateway.pmnts.io/fraud/fingerprint/{$username}.js";
-      }
+    private function getFraudFingerprintSource()
+    {
+        $is_sandbox = $this->getConfigValue("sandbox_mode");
+        $username = $this->getConfigValue("username");
+        if ($is_sandbox) {
+            return "https://gateway.pmnts-sandbox.io/fraud/fingerprint/{$username}.js";
+        } else {
+            return "https://gateway.pmnts.io/fraud/fingerprint/{$username}.js";
+        }
     }
 
-    private function getIframeSrc() {
+    private function getIframeSrc()
+    {
         $is_sandbox = $this->getConfigValue("sandbox_mode");
         $username = $this->getConfigValue("username");
         $shared_secret = $this->getConfigValue("shared_secret");
         $nonce = substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 5)), 0, 5);
         $hash_payload = "{$nonce}:1.0:AUD";
-        $hash = hash_hmac ("md5", $hash_payload, $shared_secret);
+        $hash = hash_hmac("md5", $hash_payload, $shared_secret);
 
         $base_url = "https://paynow.pmnts.io";
-        if($is_sandbox) {
+        if ($is_sandbox) {
             $base_url = "https://paynow.pmnts-sandbox.io";
         }
 
@@ -94,26 +97,28 @@ class PmntsConfigProvider implements ConfigProviderInterface
         // If CSS URL is set, generate signature, add to iframe URL
         $css_url = $this->getConfigValue("iframe_css");
         if (strlen($css_url) > 0) {
-          $css_signature = hash_hmac("md5", $css_url, $shared_secret);
-          $url = $url . "&css={$css_url}&css_signature={$css_signature}";
+            $css_signature = hash_hmac("md5", $css_url, $shared_secret);
+            $url = $url . "&css={$css_url}&css_signature={$css_signature}";
         }
 
         return $url;
     }
 
-    private function getIsSandbox() {
-      $is_sandbox = $this->getConfigValue("sandbox_mode");
+    private function getIsSandbox()
+    {
+        $is_sandbox = $this->getConfigValue("sandbox_mode");
 
-      return $is_sandbox;
+        return $is_sandbox;
     }
 
-    private function canSaveCard() {
-      $customer = $this->currentCustomer->getCustomerId();
-      return !is_null($customer);//TODO: && $this->c('customer_save_credit_card');
+    private function canSaveCard()
+    {
+        $customer = $this->currentCustomer->getCustomerId();
+        return !is_null($customer) && $this->getConfigValue('customer_save_credit_card');
     }
 
-    private function customerHasSavedCC() {
-
+    private function customerHasSavedCC()
+    {
         $customerId = $this->currentCustomer->getCustomerId();
         if (!isset($customerId)) {
             return false;
@@ -132,5 +137,4 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
         return false;
     }
-
 }
