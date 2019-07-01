@@ -24,7 +24,7 @@
     *
     * @package FatZebra
     */
-namespace Pmnts\Gateway\Model;
+namespace PMNTS\Gateway\Model;
 
 use Zend\Http\Client\Adapter\Exception\TimeoutException;
 

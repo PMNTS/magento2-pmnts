@@ -42,15 +42,18 @@ class CaptureCommand extends AbstractCommand
      * CaptureCommand constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
+     * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      * @param \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
      * @param \Magento\Framework\Serialize\Serializer\Json $json
      * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
+     * @param \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
+        \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
         \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository,
@@ -58,7 +61,7 @@ class CaptureCommand extends AbstractCommand
         \Magento\Framework\Encryption\EncryptorInterface $encryptor,
         \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory);
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->customerRepository = $customerRepository;
         $this->paymentTokenRepository = $paymentTokenRepository;
@@ -81,6 +84,7 @@ class CaptureCommand extends AbstractCommand
 
         $pmntsToken = $payment->getAdditionalInformation('pmnts_token');
 
+        /** @var \PMNTS\Gateway\Model\Gateway $gateway */
         $gateway = $this->getGateway($order->getStoreId());
 
         $reference = $this->pmntsHelper->getOrderReference($order);

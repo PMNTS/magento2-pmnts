@@ -10,19 +10,19 @@ abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterf
     /** @var \PMNTS\Gateway\Helper\Data */
     protected $pmntsHelper;
 
-    /** @var \Pmnts\Gateway\Model\GatewayFactory */
+    /** @var \PMNTS\Gateway\Model\GatewayFactory */
     protected $gatewayFactory;
 
     /**
      * AbstractCommand constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
-     * @param \Pmnts\Gateway\Model\GatewayFactory $gatewayFactory
+     * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
-        \Pmnts\Gateway\Model\GatewayFactory $gatewayFactory
+        \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->pmntsHelper = $pmntsHelper;

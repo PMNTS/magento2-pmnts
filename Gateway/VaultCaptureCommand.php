@@ -9,9 +9,6 @@
  */
 namespace PMNTS\Gateway\Gateway;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Payment\Gateway\Command\CommandException;
-
 class VaultCaptureCommand extends AbstractCommand
 {
 
@@ -22,16 +19,18 @@ class VaultCaptureCommand extends AbstractCommand
 
     /**
      * VaultCaptureCommand constructor.
-     * @param ScopeConfigInterface $scopeConfig
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
+     * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      * @param \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
+        \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
         \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory);
         $this->tokenManagement = $tokenManagement;
     }
 
@@ -39,8 +38,8 @@ class VaultCaptureCommand extends AbstractCommand
      * Perform a purchase against a saved card token.
      * @param array $commandSubject
      * @return void
-     * @throws CommandException
-     * @throws \FatZebra\TimeoutException
+     * @throws \Magento\Payment\Gateway\Command\CommandException
+     * @throws \Zend\Http\Client\Adapter\Exception\TimeoutException
      */
     public function execute(array $commandSubject)
     {
@@ -57,7 +56,7 @@ class VaultCaptureCommand extends AbstractCommand
         );
 
         if ($token) {
-            /** @var  \FatZebra\Gateway $gateway */
+            /** @var  \PMNTS\Gateway\Model\Gateway $gateway */
             $gateway = $this->getGateway($storeId);
             $fraudData = $this->pmntsHelper->buildFraudPayload($order);
 

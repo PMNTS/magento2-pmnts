@@ -11,7 +11,6 @@ namespace PMNTS\Gateway\Gateway;
 
 class RefundCommand extends AbstractCommand
 {
-
     /**
      * @param array $commandSubject
      * @return void
@@ -21,7 +20,7 @@ class RefundCommand extends AbstractCommand
     {
         /** @var \Magento\Sales\Model\Order\Payment $payment */
         $payment = $commandSubject['payment']->getPayment();
-        /** @var \FatZebra\Gateway $gateway */
+        /** @var \PMNTS\Gateway\Model\Gateway $gateway */
         $gateway = $this->getGateway($payment->getOrder()->getStoreId());
         // At this point, we don't have a CreditMemo increment ID, so append a timestamp to ensure uniqueness in the event
         // of multiple refunds against a single invoice.

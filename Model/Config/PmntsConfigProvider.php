@@ -8,7 +8,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
 {
 
     /** @var string */
-    protected $methodCode = \PMNTS\Gateway\Model\Payment::CODE;
+    protected $methodCode = \PMNTS\Gateway\Helper\Data::METHOD_CODE;
 
     /** @var \Magento\Payment\Model\MethodInterface */
     protected $method;
@@ -130,7 +130,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
         }
         $tokens = $this->paymentTokenManagement->getVisibleAvailableTokens($customerId);
         foreach ($tokens as $token) {
-            if ($token->getPaymentMethodCode() === \PMNTS\Gateway\Model\Payment::CODE) {
+            if ($token->getPaymentMethodCode() === \PMNTS\Gateway\Helper\Data::METHOD_CODE) {
                 return true;
             }
         }

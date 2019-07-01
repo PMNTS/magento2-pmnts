@@ -14,7 +14,7 @@
     <virtualType name="PMNTS\Gateway\Model\ConfigProvider" type="Magento\Payment\Model\CcGenericConfigProvider">
         <arguments>
             <argument name="methodCodes" xsi:type="array">
-                <item name="pmnts_gateway" xsi:type="const">PMNTS\Gateway\Model\Payment::CODE</item>
+                <item name="pmnts_gateway" xsi:type="const">PMNTS\Gateway\Helper\Data::METHOD_CODE</item>
             </argument>
         </arguments>
     </virtualType>
