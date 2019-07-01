@@ -63,14 +63,6 @@ define(
               return window.checkoutConfig.payment.pmntsGateway.isIframeEnabled;
             },
 
-            getFraudFingerprintSrc: function() {
-              return window.checkoutConfig.payment.pmntsGateway.fraudFingerprintSrc;
-            },
-
-            getIsGatewaySandbox: function() {
-              return window.checkoutConfig.payment.pmntsGateway.isSandbox;
-            },
-
             canSaveCard: function() {
               return window.checkoutConfig.payment.pmntsGateway.canSaveCard;
             },
@@ -80,32 +72,17 @@ define(
             },
 
             pmntsPlaceOrder: function() {
-              if (window.checkoutConfig.payment.pmntsGateway.isIframeEnabled) {
                 window.pmntsGateway.processIframeOrder();
-              } else {
-                jQuery('#default-place-order').click();
-              }
             },
 
             getData: function() {
                 var data = {
                     'method': this.item.method,
                     'additional_data': {
-                        "cc_cid":jQuery('#pmnts_gateway_cc_cid').val(),
-                        "cc_ss_start_month":"",
-                        "cc_ss_start_year":"",
-                        "cc_type": jQuery('#pmnts_gateway_cc_type').val(),
-                        "cc_exp_year":jQuery('#pmnts_gateway_expiration_yr').val(),
-                        "cc_exp_month":jQuery('#pmnts_gateway_expiration').val(),
                         "cc_token": jQuery('#pmnts_gateway-token').val(),
-                        "cc_save": jQuery("#pmnts_gateway_cc_save").is(':checked'),
-                        "pmnts_id": jQuery("#pmnts_id").val()
+                        "cc_save": jQuery("#pmnts_gateway_cc_save").is(':checked')
                     }
                 };
-
-                if (!window.checkoutConfig.payment.pmntsGateway.isIframeEnabled) {
-                    data['additional_data']["cc_number"] = jQuery('#pmnts_gateway_cc_number').val();
-                }
 
                 this.vaultEnabler.visitAdditionalData(data);
                 return data;
@@ -138,16 +115,7 @@ window.pmntsGateway = {
     window.pmntsGateway.fullScreenLoader.startLoader();
     iframe.contentWindow.postMessage('doCheckout', '*');
   },
-  cardTypeMap: function(gwType) {
-    var types = {
-      visa: 'VI',
-      mastercard: 'MC',
-      amex: 'AE',
-      jcb: 'JCB'
-    };
 
-    return types[gwType.toLowerCase()];
-  },
   receiveMessage: function(event) {
       if (event.origin.indexOf("paynow") === -1)  return;
       window.pmntsGateway.fullScreenLoader.stopLoader();
@@ -185,12 +153,7 @@ window.pmntsGateway = {
   },
   fillInPaymentForm: function(data) {
     jQuery("#pmnts_gateway-token").val(data.token);
-    jQuery('#pmnts_gateway_cc_number').val(data.card_number);
-    var expiryParts = data.card_expiry.split('/');
-    jQuery('#pmnts_gateway_expiration').val(expiryParts[0]);
-    jQuery('#pmnts_gateway_expiration_yr').val(expiryParts[1]);
-    jQuery('#pmnts_gateway_cc_type').val(window.pmntsGateway.cardTypeMap(data.card_type));
-    jQuery('#default-place-order').click();
+    jQuery('#pmnts-place-token-order').click();
   },
   messageList: null,
   fullScreenLoader: null

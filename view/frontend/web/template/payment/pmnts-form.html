@@ -10,11 +10,6 @@
 -->
 
 <div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
-  <input type="hidden"
-         id="pmnts_id"
-         name="payment[pmnts_id]"
-         class="input-text"
-         value="">
     <div class="payment-method-title field choice">
         <input type="radio"
                name="payment[method]"
@@ -33,24 +28,13 @@
         </div>
 
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
-          <!-- ko if: customerHasSavedCC() -->
-            <!-- CUSTOMER HAS CC -->
-          <!-- /ko -->
-          <!-- ko if: isIframeEnabled() -->
-            <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" frameborder="0" style="height: 240px; overflow: hidden;"/>
+            <iframe src="" id='checkout-iframe' data-bind="attr: {'src': getIframeUrl()}" frameborder="0" style="height: 240px; overflow: hidden;"></iframe>
             <input type="hidden"
                    name="payment[token]"
                    class="input-text"
                    value=""
                    data-bind="attr: {'id': getCode() + '-token'}">
-                   <input type="hidden" id="pmnts_gateway_cc_number" name="payment[cc_number]"/>
-                   <input type="hidden" id="pmnts_gateway_expiration" name="payment[cc_exp_month]"/>
-                   <input type="hidden" id="pmnts_gateway_expiration_yr" name="payment[cc_exp_year]"/>
-                   <input type="hidden" id="pmnts_gateway_cc_type" name="payment[cc_type]"/>
-          <!-- /ko -->
-          <!-- ko ifnot: isIframeEnabled() -->
-            <!-- ko template: 'Magento_Payment/payment/cc-form' --><!-- /ko -->
-          <!-- /ko -->
+
           <!-- ko if: canSaveCard() -->
             <div class="field">
               <div class="control">
@@ -94,7 +78,7 @@
                         attr: {title: $t('Place Order')},
                         css: {disabled: !isPlaceOrderActionAllowed()}
                         "
-                         style="display: none;" id="default-place-order">
+                        style="display: none;" id="pmnts-place-token-order">
                     <span data-bind="text: $t('Place Order')"></span>
                 </button>
             </div>
