@@ -9,6 +9,8 @@
  */
 namespace PMNTS\Gateway\Gateway;
 
+use Psr\Log\LoggerInterface;
+
 class VaultCaptureCommand extends AbstractCommand
 {
 
@@ -22,15 +24,17 @@ class VaultCaptureCommand extends AbstractCommand
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
+     * @param LoggerInterface $logger
      * @param \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
+        \Psr\Log\LoggerInterface $logger,
         \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
         $this->tokenManagement = $tokenManagement;
     }
 
@@ -50,9 +54,12 @@ class VaultCaptureCommand extends AbstractCommand
         $order = $payment->getOrder();
         $storeId = $order->getStoreId();
 
+        $publicHash = $payment->getAdditionalInformation('public_hash');
+        $customerId = $payment->getAdditionalInformation('customer_id');
+
         $token = $this->tokenManagement->getByPublicHash(
-            $payment->getAdditionalInformation('public_hash'),
-            $payment->getAdditionalInformation('customer_id')
+            $publicHash,
+            $customerId
         );
 
         if ($token) {
@@ -70,8 +77,21 @@ class VaultCaptureCommand extends AbstractCommand
 
             if ($result && isset($result['response']) && $result['response']['successful'] === true) {
                 $payment->setLastTransId($result['response']['transaction_id']);
+            } else {
+                $errors = isset($result['errors']) ? $result['errors'] : ['Gateway error'];
+                $this->logger->critical(__(
+                    'Vault payment error (Order #%1): %2',
+                    $order->getIncrementId(),
+                    implode('. ', $errors)
+                ));
+                throw new \Magento\Payment\Gateway\Command\CommandException(__('Payment failed, please contact customer service.'));
             }
         } else {
+            $this->logger->critical(__(
+                "Unable to load token. Customer ID: %1. Public hash: %2",
+                $customerId,
+                $publicHash
+            ));
             throw new \Magento\Payment\Gateway\Command\CommandException(__('Unable to place order.'));
         }
     }

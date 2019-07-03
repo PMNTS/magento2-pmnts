@@ -43,6 +43,7 @@ class CaptureCommand extends AbstractCommand
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
+     * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
@@ -54,6 +55,7 @@ class CaptureCommand extends AbstractCommand
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
+        \Psr\Log\LoggerInterface $logger,
         \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository,
@@ -61,7 +63,7 @@ class CaptureCommand extends AbstractCommand
         \Magento\Framework\Encryption\EncryptorInterface $encryptor,
         \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->customerRepository = $customerRepository;
         $this->paymentTokenRepository = $paymentTokenRepository;
@@ -96,11 +98,13 @@ class CaptureCommand extends AbstractCommand
 
         if ($result && isset($result['response'])) {
             if ($result['response']['successful'] === false) {
-                $errorMsg = $result['response']['message'] ?: 'Unknown gateway error.';
-                if (is_array($result['errors']) && count($result['errors']) > 0) {
-                    $errorMsg = join('. ', $result['errors']);
-                }
-                throw new \Magento\Framework\Validator\Exception(__("Payment error: %1", $errorMsg));
+                $errors = isset($result['errors']) ? $result['errors'] : ['Gateway error'];
+                $this->logger->critical(__(
+                    'Payment error (Order #%1): %2',
+                    $order->getIncrementId(),
+                    implode('. ', $errors)
+                ));
+                throw new \Magento\Framework\Validator\Exception(__('Payment failed, please contact customer service.'));
             }
         } else {
             throw new \Magento\Framework\Validator\Exception(__('Payment gateway error, please contact customer service.'));

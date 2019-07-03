@@ -26,5 +26,14 @@ class RefundCommand extends AbstractCommand
         // of multiple refunds against a single invoice.
         $reference = $this->pmntsHelper->getOrderReference($payment->getOrder()) . '-R-' . (new \DateTime())->format('ymdhi');
         $response = $gateway->refund($payment->getLastTransId(), $commandSubject['amount'], $reference);
+        if (is_array($response) && array_key_exists('successful', $response)) {
+            if ($response['successful'] === true) {
+                $payment->setLastTransId($response['response']['transaction_id']);
+            } else {
+                $errors = array_key_exists('errors', $response) ? implode('. ', $response['errors']) : 'Unknown gateway error';
+                $this->logger->critical(__('Refund failed for Order #%1. %2', $payment->getOrder()->getIncrementId()), $errors);
+                throw new \Exception(__('Refund failed: %1', $errors));
+            }
+        }
     }
 }

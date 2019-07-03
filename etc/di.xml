@@ -85,4 +85,35 @@
             <argument name="commandPool" xsi:type="object">PmntsCommandPool</argument>
         </arguments>
     </virtualType>
+
+    <virtualType name="PmntsGatewayLoggerHandler" type="\Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/pmnts_gateway.log</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PmntsGatewayLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="object">pmnts_gateway</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="object">PmntsGatewayLoggerHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="\PMNTS\Gateway\Gateway\RefundCommand">
+        <arguments>
+            <argument name="logger" xsi:type="object">PmntsGatewayLogger</argument>
+        </arguments>
+    </type>
+    <type name="\PMNTS\Gateway\Gateway\CaptureCommand">
+        <arguments>
+            <argument name="logger" xsi:type="object">PmntsGatewayLogger</argument>
+        </arguments>
+    </type>
+    <type name="\PMNTS\Gateway\Gateway\VaultCaptureCommand">
+        <arguments>
+            <argument name="logger" xsi:type="object">PmntsGatewayLogger</argument>
+        </arguments>
+    </type>
 </config>
