@@ -27,16 +27,15 @@ class CaptureCommand extends AbstractCommand
     /** @var \Magento\Framework\Encryption\EncryptorInterface */
     private $encryptor;
 
+    /** @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory */
+    private $paymentExtensionInterfaceFactory;
+
     public static $cardTypeMap = [
         'MasterCard' => 'MC',
         'VISA'       => 'VI',
         'AMEX'       => 'AE',
         'JCB'        => 'JCB'
     ];
-    /**
-     * @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory
-     */
-    private $paymentExtensionInterfaceFactory;
 
     /**
      * CaptureCommand constructor.
@@ -44,6 +43,7 @@ class CaptureCommand extends AbstractCommand
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      * @param \Psr\Log\LoggerInterface $logger
+     * @param \Magento\Framework\Encryption\EncryptorInterface $crypt
      * @param \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
@@ -56,6 +56,7 @@ class CaptureCommand extends AbstractCommand
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
         \Psr\Log\LoggerInterface $logger,
+        \Magento\Framework\Encryption\EncryptorInterface $crypt,
         \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository,
@@ -63,7 +64,7 @@ class CaptureCommand extends AbstractCommand
         \Magento\Framework\Encryption\EncryptorInterface $encryptor,
         \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger, $crypt);
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->customerRepository = $customerRepository;
         $this->paymentTokenRepository = $paymentTokenRepository;
@@ -74,9 +75,8 @@ class CaptureCommand extends AbstractCommand
 
     /**
      * @param array $commandSubject
-     * @return null|\Magento\Payment\Gateway\Command\ResultInterface
-     * @throws \Magento\Payment\Gateway\Command\CommandException
-     * @throws \Exception
+     * @return void
+     * @throws \Magento\Framework\Validator\Exception
      */
     public function execute(array $commandSubject)
     {
@@ -111,7 +111,12 @@ class CaptureCommand extends AbstractCommand
         }
 
         if ($payment->getAdditionalInformation('pmnts_save_token') && $order->getCustomerId()) {
-            $paymentTokenDetails = $this->getTokenDetails($result['response']);
+            try {
+                $paymentTokenDetails = $this->getTokenDetails($result['response']);
+            } catch (\Exception $ex) {
+                // If the response from the gateway does not conform to the spec, give up on Vault storage
+                return;
+            }
 
             /** @var \Magento\Vault\Model\PaymentToken $paymentToken */
             $paymentToken = $this->paymentTokenFactory->create();
@@ -132,6 +137,7 @@ class CaptureCommand extends AbstractCommand
     /**
      * @param array $response
      * @return array
+     * @throws \Exception
      */
     protected function getTokenDetails($response)
     {

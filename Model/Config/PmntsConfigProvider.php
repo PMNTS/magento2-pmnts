@@ -45,7 +45,6 @@ class PmntsConfigProvider implements ConfigProviderInterface
             'payment' => [
                 'pmntsGateway' => [
                     'iframeSrc' => $this->getIframeSrc(),
-                    'isIframeEnabled' => $this->getIframeEnabled(),
                     'fraudFingerprintSrc' => $this->getFraudFingerprintSource(),
                     'isSandbox' => $this->getIsSandbox(),
                     'canSaveCard' => $this->canSaveCard(),
@@ -60,11 +59,6 @@ class PmntsConfigProvider implements ConfigProviderInterface
     private function getConfigValue($key)
     {
         return $this->method->getConfigData($key);
-    }
-
-    private function getIframeEnabled()
-    {
-        return (bool)$this->getConfigValue("iframe_tokenization");
     }
 
     private function getFraudFingerprintSource()

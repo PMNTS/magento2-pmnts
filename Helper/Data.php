@@ -6,6 +6,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const METHOD_CODE = 'pmnts_gateway';
     const VAULT_METHOD_CODE = 'pmnts_gateway_vault';
 
+    const CONFIG_PATH_PMNTS_USERNAME = 'payment/pmnts_gateway/username';
+    const CONFIG_PATH_PMNTS_TOKEN = 'payment/pmnts_gateway/token';
+    const CONFIG_PATH_PMNTS_SANDBOX = 'payment/pmnts_gateway/sandbox_mode';
+
+
     const RE_ANS = "/[^A-Z\d\-_',\.;:\s]*/i";
     const RE_AN = "/[^A-Z\d]/i";
     const RE_NUMBER = "/[^\d]/";
@@ -93,7 +98,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         try {
-            $baseUrl = $this->storeManager->getStore($order->getId())->getBaseUrl();
+            $baseUrl = $this->storeManager->getStore($order->getStoreId())->getBaseUrl();
         } catch (\Magento\Framework\Exception\NoSuchEntityException $ex) {
             $baseUrl = $this->storeManager->getStore()->getBaseUrl();
         }

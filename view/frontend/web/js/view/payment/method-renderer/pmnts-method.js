@@ -49,18 +49,8 @@ define(
                 return true;
             },
 
-            validate: function() {
-                if (this.isIframeEnabled()) { return true; }
-                var $form = $('#' + this.getCode() + '-form');
-                return $form.validation() && $form.validation('isValid');
-            },
-
             getIframeUrl: function() {
               return window.checkoutConfig.payment.pmntsGateway.iframeSrc;
-            },
-
-            isIframeEnabled: function() {
-              return window.checkoutConfig.payment.pmntsGateway.isIframeEnabled;
             },
 
             canSaveCard: function() {
