@@ -32,9 +32,10 @@
                       <field id="active">1</field>
                     </depends>
                 </field>
-                <field id="token" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label" type="text">
+                <field id="token" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="40" translate="label" type="obscure">
                     <label>Token</label>
                     <validate>required-entry</validate>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                       <field id="active">1</field>
                     </depends>
@@ -55,22 +56,12 @@
                     <label>Payment Action</label>
                     <source_model>PMNTS\Gateway\Model\Source\Action</source_model>
                 </field>
-                <field id="iframe_tokenization" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="90" translate="label" type="select">
-                    <label>IFRAME Tokenization</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
                 <field id="shared_secret" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="91" translate="label" type="text">
                     <label>Shared Secret</label>
                     <validate>required-entry</validate>
-                    <depends>
-                      <field id="iframe_tokenization">1</field>
-                    </depends>
                 </field>
                 <field id="iframe_css" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="92" translate="label" type="text">
                     <label>IFRAME Stylesheet URL</label>
-                    <depends>
-                        <field id="iframe_tokenization">1</field>
-                    </depends>
                     <comment>URL must start with https:// and return valid CSS.</comment>
                 </field>
                 <field id="cctypes" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="100" translate="label" type="multiselect">
@@ -95,6 +86,7 @@
                 </field>
                 <field id="customer_save_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="120" translate="label" type="select">
                     <label>Customer can save Credit Card</label>
+                    <config_path>payment/pmnts_gateway_vault/active</config_path>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Allow customers credit card tokens to be saved for future use.</comment>
                 </field>

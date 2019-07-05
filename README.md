@@ -5,12 +5,10 @@ Overview
 --------
 The PMNTS Magento 2 module provides a simple integration method for Magento 2.x with the Fat Zebra, Cloud Payments and PMNTS gateway services. This module includes support for the following functionality:
 
-* Standard payments through the Gateway API
 * IFRAME card details capture for de-scoping of PCI requirements
+* Card tokenization and one-click saved card payment using the Magento Vault
 * Refunds of orders through Magento
 * Fraud screening of transactions
-
-The module can be configured to use either direct integration (where credit card details are transmitted through the webserver onto the gateway) or by using an iframe to capture the customers credit card and using a token in lieu of the customers card details to process the transaction. While both of these methods do not completely absolve the merchant of their PCI responsibilities the IFRAME method significantly reduces the requirements under PCI DSS1
 
 Fraud Screening of transactions is performed through the payment gateway inline with the payment request and has four possible outcomes:
 

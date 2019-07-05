@@ -14,7 +14,7 @@
     <virtualType name="PMNTS\Gateway\Model\ConfigProvider" type="Magento\Payment\Model\CcGenericConfigProvider">
         <arguments>
             <argument name="methodCodes" xsi:type="array">
-                <item name="pmnts_gateway" xsi:type="const">PMNTS\Gateway\Model\Payment::CODE</item>
+                <item name="pmnts_gateway" xsi:type="const">PMNTS\Gateway\Helper\Data::METHOD_CODE</item>
             </argument>
         </arguments>
     </virtualType>
@@ -24,6 +24,14 @@
             <argument name="configProviders" xsi:type="array">
                 <item name="pmnts_gateway_config_provider" xsi:type="object">PMNTS\Gateway\Model\ConfigProvider</item>
                 <item name="pmnts_gateway_iframe_config_provider" xsi:type="object">PMNTS\Gateway\Model\Config\PmntsConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Vault\Model\Ui\TokensConfigProvider">
+        <arguments>
+            <argument name="tokenUiComponentProviders" xsi:type="array">
+                <item name="pmnts_gateway" xsi:type="object">PMNTS\Gateway\Model\Ui\TokenUiComponentProvider</item>
             </argument>
         </arguments>
     </type>
