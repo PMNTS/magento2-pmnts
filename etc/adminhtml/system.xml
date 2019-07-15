@@ -86,7 +86,6 @@
                 </field>
                 <field id="customer_save_credit_card" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="120" translate="label" type="select">
                     <label>Customer can save Credit Card</label>
-                    <config_path>payment/pmnts_gateway_vault/active</config_path>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Allow customers credit card tokens to be saved for future use.</comment>
                 </field>
