@@ -15,25 +15,30 @@ class PmntsConfigProvider implements ConfigProviderInterface
 
     /** @var \Magento\Customer\Helper\Session\CurrentCustomer */
     protected $currentCustomer;
-    /**
-     * @var \Magento\Vault\Model\PaymentTokenManagement
-     */
+
+    /** @var \Magento\Vault\Model\PaymentTokenManagement */
     protected $paymentTokenManagement;
+
+    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
+    protected $scopeConfig;
 
     /**
      * @param \Magento\Payment\Helper\Data $paymentHelper
      * @param \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer
      * @param \Magento\Vault\Model\PaymentTokenManagement $paymentTokenManagement
+     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function __construct(
         \Magento\Payment\Helper\Data $paymentHelper,
         \Magento\Customer\Helper\Session\CurrentCustomer $currentCustomer,
-        \Magento\Vault\Model\PaymentTokenManagement $paymentTokenManagement
+        \Magento\Vault\Model\PaymentTokenManagement $paymentTokenManagement,
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
     ) {
         $this->method = $paymentHelper->getMethodInstance($this->methodCode);
         $this->currentCustomer = $currentCustomer;
         $this->paymentTokenManagement = $paymentTokenManagement;
+        $this->scopeConfig = $scopeConfig;
     }
 
     /**
@@ -108,7 +113,7 @@ class PmntsConfigProvider implements ConfigProviderInterface
     private function canSaveCard()
     {
         $customer = $this->currentCustomer->getCustomerId();
-        return !is_null($customer) && $this->getConfigValue('customer_save_credit_card');
+        return !is_null($customer) && $this->scopeConfig->getValue('payment/pmnts_gateway_vault/active', 'stores');
     }
 
     private function customerHasSavedCC()
