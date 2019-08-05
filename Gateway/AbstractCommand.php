@@ -16,29 +16,23 @@ abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterf
     /** @var \Psr\Log\LoggerInterface */
     protected $logger;
 
-    /** @var \Magento\Framework\Encryption\EncryptorInterface */
-    protected $crypt;
-
     /**
      * AbstractCommand constructor.
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\Encryption\EncryptorInterface $crypt
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\Encryption\EncryptorInterface $crypt
+        \Psr\Log\LoggerInterface $logger
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->pmntsHelper = $pmntsHelper;
         $this->gatewayFactory = $gatewayFactory;
         $this->logger = $logger;
-        $this->crypt = $crypt;
     }
 
     /**
@@ -47,11 +41,23 @@ abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterf
      */
     public function getGateway($storeId)
     {
-        $username = $this->scopeConfig->getValue(\PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_USERNAME, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
-        $token = $this->crypt->decrypt(
-            $this->scopeConfig->getValue(\PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_TOKEN, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId)
+        $username = $this->scopeConfig->getValue(
+            \PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_USERNAME,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
         );
-        $sandbox = (bool)$this->scopeConfig->getValue(\PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_SANDBOX, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
+
+        $token = $this->scopeConfig->getValue(
+            \PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_TOKEN,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
+
+        $sandbox = (bool)$this->scopeConfig->getValue(
+            \PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_SANDBOX,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $storeId
+        );
 
         return $this->gatewayFactory->create([
             'username' => $username,
