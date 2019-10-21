@@ -1,8 +1,14 @@
 <?php
+
 /**
- * Copyright © 2016 Magento. All rights reserved.
- * See COPYING.txt for license details.
+ * Enabled carriers source model
+ *
+ * @category    PMNTS
+ * @package     PMNTS_Gateway
+ * @copyright   PMNTS (http://PMNTS.io)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+
 namespace PMNTS\Gateway\Model\Source;
 
 class EnabledMethods implements \Magento\Framework\Option\ArrayInterface

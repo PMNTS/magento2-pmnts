@@ -26,7 +26,6 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="renders" xsi:type="array">
                                                             <!-- merge payment method renders here -->
-
                                                             <item name="children" xsi:type="array">
                                                                 <item name="pmnts_gateway-payments" xsi:type="array">
                                                                     <item name="component" xsi:type="string">PMNTS_Gateway/js/view/payment/pmnts-payments</item>
