@@ -25,7 +25,6 @@ class VaultCaptureCommand extends AbstractCommand
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      * @param LoggerInterface $logger
-     * @param \Magento\Framework\Encryption\EncryptorInterface $crypt
      * @param \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
      */
     public function __construct(
@@ -33,10 +32,9 @@ class VaultCaptureCommand extends AbstractCommand
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\Encryption\EncryptorInterface $crypt,
         \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger, $crypt);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
         $this->tokenManagement = $tokenManagement;
     }
 

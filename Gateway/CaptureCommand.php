@@ -24,9 +24,6 @@ class CaptureCommand extends AbstractCommand
     /** @var \Magento\Framework\Serialize\Serializer\Json */
     private $json;
 
-    /** @var \Magento\Framework\Encryption\EncryptorInterface */
-    private $encryptor;
-
     /** @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory */
     private $paymentExtensionInterfaceFactory;
 
@@ -43,12 +40,10 @@ class CaptureCommand extends AbstractCommand
      * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
      * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
      * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\Encryption\EncryptorInterface $crypt
      * @param \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory
      * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
      * @param \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
      * @param \Magento\Framework\Serialize\Serializer\Json $json
-     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
      * @param \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
      */
     public function __construct(
@@ -56,20 +51,17 @@ class CaptureCommand extends AbstractCommand
         \PMNTS\Gateway\Helper\Data $pmntsHelper,
         \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\Encryption\EncryptorInterface $crypt,
         \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository,
         \Magento\Framework\Serialize\Serializer\Json $json,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor,
         \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
     ) {
-        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger, $crypt);
+        parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
         $this->paymentTokenFactory = $paymentTokenFactory;
         $this->customerRepository = $customerRepository;
         $this->paymentTokenRepository = $paymentTokenRepository;
         $this->json = $json;
-        $this->encryptor = $encryptor;
         $this->paymentExtensionInterfaceFactory = $paymentExtensionInterfaceFactory;
     }
 
