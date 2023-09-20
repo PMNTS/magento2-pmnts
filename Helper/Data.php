@@ -1,40 +1,50 @@
 <?php
 namespace PMNTS\Gateway\Helper;
 
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Sales\Model\Order;
+use Magento\Framework\Exception\NoSuchEntityException;
+use FatZebra\Helpers;
+
+class Data extends AbstractHelper
 {
-    const METHOD_CODE = 'pmnts_gateway';
-    const VAULT_METHOD_CODE = 'pmnts_gateway_vault';
+    public const METHOD_CODE = 'pmnts_gateway';
+    public const VAULT_METHOD_CODE = 'pmnts_gateway_vault';
 
-    const CONFIG_PATH_PMNTS_USERNAME = 'payment/pmnts_gateway/username';
-    const CONFIG_PATH_PMNTS_TOKEN = 'payment/pmnts_gateway/token';
-    const CONFIG_PATH_PMNTS_SANDBOX = 'payment/pmnts_gateway/sandbox_mode';
+    public const CONFIG_PATH_PMNTS_USERNAME = 'payment/pmnts_gateway/username';
+    public const CONFIG_PATH_PMNTS_TOKEN = 'payment/pmnts_gateway/token';
+    public const CONFIG_PATH_PMNTS_SANDBOX = 'payment/pmnts_gateway/sandbox_mode';
 
+    public const RE_ANS = "/[^A-Z\d\-_',\.;:\s]*/i";
+    public const RE_AN = "/[^A-Z\d]/i";
+    public const RE_NUMBER = "/[^\d]/";
 
-    const RE_ANS = "/[^A-Z\d\-_',\.;:\s]*/i";
-    const RE_AN = "/[^A-Z\d]/i";
-    const RE_NUMBER = "/[^\d]/";
-
-    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
+    /**
+     * @var ScopeConfigInterface
+     */
     protected $scopeConfig;
     /**
-     * @var \Magento\Customer\Api\CustomerRepositoryInterface
+     * @var CustomerRepositoryInterface
      */
     private $customerRepository;
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param Context $context
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        Context $context,
+        CustomerRepositoryInterface $customerRepository,
+        StoreManagerInterface $storeManager
     ) {
         parent::__construct($context);
         $this->scopeConfig = $context->getScopeConfig();
@@ -43,25 +53,29 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @param \Magento\Sales\Model\Order $order
+     * Get Order Reference
+     *
+     * @param Order $order
      * @return string
      */
-    public function getOrderReference($order)
+    public function getOrderReference($order): string
     {
         $merchantReference = $order->getIncrementId();
         $prefix = $this->getConfigData('reference_prefix', $order->getStoreId());
         if ($prefix) {
             $merchantReference = $prefix . $merchantReference;
         }
-
         return $merchantReference;
     }
 
     /**
-     * @param \Magento\Sales\Api\Data\OrderInterface $order
+     * Build Fraud Payload
+     *
+     * @param order $order
      * @return array|null
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
-    public function buildFraudPayload($order)
+    public function buildFraudPayload($order): ?array
     {
         if (!$this->getConfigData('fraud_detection_enabled', $order->getStoreId())) {
             return null;
@@ -99,7 +113,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         try {
             $baseUrl = $this->storeManager->getStore($order->getStoreId())->getBaseUrl();
-        } catch (\Magento\Framework\Exception\NoSuchEntityException $ex) {
+        } catch (NoSuchEntityException $ex) {
             $baseUrl = $this->storeManager->getStore()->getBaseUrl();
         }
 
@@ -124,9 +138,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         $fraudData = [
             "customer" => [
-                    "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
+                    "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' Data.php' .
+                        $billing->getStreetLine(2), self::RE_ANS, 30),
                     "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                    "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                    "country" => Helpers::iso3166Alpha3($billing->getCountryId()),
                     "created_at" => $customerCreatedAt,
                     "date_of_birth" => $customerDob,
                     "email" => $order->getCustomerEmail(),
@@ -141,9 +156,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             "items" => $orderItems,
             "recipients" => [
                 [
-                    "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' ' . $billing->getStreetLine(2), self::RE_ANS, 30),
+                    "address_1" => $this->cleanForFraud($billing->getStreetLine(1) . ' Data.php' .
+                        $billing->getStreetLine(2), self::RE_ANS, 30),
                     "city" => $this->cleanForFraud($billing->getCity(), self::RE_ANS, 20),
-                    "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                    "country" => Helpers::iso3166Alpha3($billing->getCountryId()),
                     "email" => $billing->getEmail(),
                     "first_name" => $this->cleanForFraud($billing->getFirstname(), self::RE_ANS, 30),
                     "last_name" => $this->cleanForFraud($billing->getLastname(), self::RE_ANS, 30),
@@ -155,11 +171,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             "website" => $baseUrl
         ];
 
-        if (!is_null($shipping)) {
+        if ($shipping !== null) {
             $fraudData["shipping_address"] = [
-                "address_1" => $this->cleanForFraud($shipping->getStreetLine(1) . ' ' . $shipping->getStreetLine(2), self::RE_ANS, 30),
+                "address_1" => $this->cleanForFraud($shipping->getStreetLine(1) . ' Data.php' .
+                    $shipping->getStreetLine(2), self::RE_ANS, 30),
                 "city" => $this->cleanForFraud($shipping->getCity(), self::RE_ANS, 20),
-                "country" => \FatZebra\Helpers::iso3166_alpha3($billing->getCountryId()),
+                "country" => Helpers::iso3166Alpha3($billing->getCountryId()),
                 "email" => $shipping->getEmail(),
                 "first_name" => $this->cleanForFraud($shipping->getFirstname(), self::RE_ANS, 30),
                 "last_name" => $this->cleanForFraud($shipping->getLastname(), self::RE_ANS, 30),
@@ -172,9 +189,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $fraudData;
     }
 
+    /**
+     * Clean For Fraud
+     *
+     * @param array|string $data
+     * @param array|string $pattern
+     * @param int $maxlen
+     * @param string $trimDirection
+     * @return array|false|string|string[]|null
+     */
     public function cleanForFraud($data, $pattern, $maxlen, $trimDirection = 'right')
     {
-        $data = preg_replace($pattern, '', \FatZebra\Helpers::toASCII($data));
+        $data = preg_replace($pattern, '', \FatZebra\Helpers::toASCII($data)); // phpcs:ignore
         $data = preg_replace('/[\r\n]/', ' ', $data);
         if (strlen($data) > $maxlen) {
             if ($trimDirection == 'right') {
@@ -187,7 +213,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
     }
 
-    // Maps AU States to the codes... otherwise return the state scrubbed for fraud....
+    /**
+     * State Map, Maps AU States to the codes... otherwise return the state scrubbed for fraud....
+     *
+     * @param mixed $stateName
+     * @return array|false|string|string[]|null
+     */
     public function stateMap($stateName)
     {
         $states = [
@@ -209,19 +240,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Get Fraud Shipping Method
+     *
      * @param \Magento\Sales\Api\Data\OrderInterface $order
      * @return string
      */
-    public function getFraudShippingMethod($order)
+    public function getFraudShippingMethod($order): string
     {
         $shipping = $order->getShippingMethod();
 
         $methodLowcost = explode(',', $this->getConfigData('fraud_ship_lowcost', $order->getStoreId()));
-        $methodOvernight = explode(',', $this->getConfigData('fraud_ship_overnight', $order->getStoreId()));
+        $methodOvernight = explode(
+            ',',
+            $this->getConfigData(
+                'fraud_ship_overnight',
+                $order->getStoreId()
+            )
+        );
         $methodSameday = explode(',', $this->getConfigData('fraud_ship_sameday', $order->getStoreId()));
         $methodPickup = explode(',', $this->getConfigData('fraud_ship_pickup', $order->getStoreId()));
         $methodExpress = explode(',', $this->getConfigData('fraud_ship_express', $order->getStoreId()));
-        $methodInternational = explode(',', $this->getConfigData('fraud_ship_international', $order->getStoreId()));
+        $methodInternational = explode(
+            ',',
+            $this->getConfigData(
+                'fraud_ship_international',
+                $order->getStoreId()
+            )
+        );
 
         if (in_array($shipping, $methodLowcost)) {
             return 'low_cost';
@@ -250,6 +295,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return 'other';
     }
 
+    /**
+     * Get Config Data
+     *
+     * @param string $field
+     * @param string|int|null $storeId
+     * @return mixed
+     */
     protected function getConfigData($field, $storeId = 0)
     {
         return $this->scopeConfig->getValue('payment/pmnts_gateway/' . $field, 'stores', $storeId);

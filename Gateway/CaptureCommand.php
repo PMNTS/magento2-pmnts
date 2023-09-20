@@ -7,26 +7,51 @@
  * @copyright   PMNTS (http://PMNTS.io)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+declare(strict_types=1);
+
 namespace PMNTS\Gateway\Gateway;
+
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use PMNTS\Gateway\Helper\Data;
+use PMNTS\Gateway\Model\GatewayFactory;
+use Psr\Log\LoggerInterface;
+use Magento\Vault\Model\PaymentTokenFactory;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Vault\Api\PaymentTokenRepositoryInterface;
+use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory;
 
 class CaptureCommand extends AbstractCommand
 {
 
-    /** @var \Magento\Vault\Model\PaymentTokenFactory */
+    /**
+     * @var PaymentTokenFactory
+     */
     private $paymentTokenFactory;
 
-    /** @var \Magento\Customer\Api\CustomerRepositoryInterface */
+    /**
+     * @var CustomerRepositoryInterface
+     */
     private $customerRepository;
 
-    /** @var \Magento\Vault\Api\PaymentTokenRepositoryInterface */
+    /**
+     * @var PaymentTokenRepositoryInterface
+     */
     private $paymentTokenRepository;
 
-    /** @var \Magento\Framework\Serialize\Serializer\Json */
+    /**
+     * @var Json
+     */
     private $json;
 
-    /** @var \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory */
-    private $paymentExtensionInterfaceFactory;
+    /**
+     * @var OrderPaymentExtensionInterfaceFactory
+     */
+    private OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory;
 
+    /**
+     * @var string[]
+     */
     public static $cardTypeMap = [
         'MasterCard' => 'MC',
         'VISA'       => 'VI',
@@ -36,26 +61,27 @@ class CaptureCommand extends AbstractCommand
 
     /**
      * CaptureCommand constructor.
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
-     * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory
-     * @param \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository
-     * @param \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository
-     * @param \Magento\Framework\Serialize\Serializer\Json $json
-     * @param \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
+     *
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Data $pmntsHelper
+     * @param GatewayFactory $gatewayFactory
+     * @param LoggerInterface $logger
+     * @param PaymentTokenFactory $paymentTokenFactory
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param PaymentTokenRepositoryInterface $paymentTokenRepository
+     * @param Json $json
+     * @param OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \PMNTS\Gateway\Helper\Data $pmntsHelper,
-        \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Vault\Model\PaymentTokenFactory $paymentTokenFactory,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
-        \Magento\Vault\Api\PaymentTokenRepositoryInterface $paymentTokenRepository,
-        \Magento\Framework\Serialize\Serializer\Json $json,
-        \Magento\Sales\Api\Data\OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
+        ScopeConfigInterface $scopeConfig,
+        Data $pmntsHelper,
+        GatewayFactory $gatewayFactory,
+        LoggerInterface $logger,
+        PaymentTokenFactory $paymentTokenFactory,
+        CustomerRepositoryInterface $customerRepository,
+        PaymentTokenRepositoryInterface $paymentTokenRepository,
+        Json $json,
+        OrderPaymentExtensionInterfaceFactory $paymentExtensionInterfaceFactory
     ) {
         parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
         $this->paymentTokenFactory = $paymentTokenFactory;
@@ -66,8 +92,11 @@ class CaptureCommand extends AbstractCommand
     }
 
     /**
+     * Execute
+     *
      * @param array $commandSubject
-     * @return void
+     * @return \Magento\Payment\Gateway\Command\ResultInterface|void|null
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Validator\Exception
      */
     public function execute(array $commandSubject)
@@ -86,26 +115,50 @@ class CaptureCommand extends AbstractCommand
         $fraudData = $this->pmntsHelper->buildFraudPayload($order);
 
         /** @var array $result */
-        $result = $gateway->token_purchase($pmntsToken, $commandSubject['amount'], $reference, null, $fraudData);
+        $result = $gateway->tokenPurchase($pmntsToken, $commandSubject['amount'], $reference, null, $fraudData);
 
         if ($result && isset($result['response'])) {
-            if ($result['response']['successful'] === false) {
+            /**
+             * fixing issue for GooglePay responses status as successful key comes under results array
+             * but successful key comes under results[response] array for FatZebra
+             * This now works for both FatZebra and GooglePay
+             */
+            if ($result['response']['successful'] === true && $result['successful'] === true) {
+                if (!empty($result['response']['transaction_id'])) {
+                    $payment->setLastTransId($result['response']['transaction_id']);
+                    $payment->setTransactionId($result['response']['transaction_id']);
+                    $payment->setIsTransactionClosed(true);
+                } else {
+                    $this->logger->alert(
+                        __('[FATZEBRA][CaptureCommand] transaction_id
+                        is missing from the response object for order : '.
+                            $order->getIncrementId())
+                    );
+                }
+            } else {
                 $errors = isset($result['errors']) ? $result['errors'] : ['Gateway error'];
-                $this->logger->critical(__(
-                    'Payment error (Order #%1): %2',
-                    $order->getIncrementId(),
-                    implode('. ', $errors)
-                ));
-                throw new \Magento\Framework\Validator\Exception(__('Payment failed, please contact customer service.'));
+                $this->logger->critical(
+                    __(
+                        '[FATZEBRA][CaptureCommand] Payment error (Order #%1): %2',
+                        $order->getIncrementId(),
+                        implode('. ', $errors)
+                    )
+                );
+                throw new \Magento\Framework\Validator\Exception(
+                    __('Payment failed, please contact customer service.')
+                );
             }
         } else {
-            throw new \Magento\Framework\Validator\Exception(__('Payment gateway error, please contact customer service.'));
+            throw new \Magento\Framework\Validator\Exception(
+                __('Payment gateway error, please contact customer service.')
+            );
         }
 
         if ($payment->getAdditionalInformation('pmnts_save_token') && $order->getCustomerId()) {
             try {
                 $paymentTokenDetails = $this->getTokenDetails($result['response']);
             } catch (\Exception $ex) {
+                $this->logger->alert('[FATZEBRA][CaptureCommand]' . $ex->getMessage());
                 // If the response from the gateway does not conform to the spec, give up on Vault storage
                 return;
             }
@@ -127,11 +180,13 @@ class CaptureCommand extends AbstractCommand
     }
 
     /**
+     * Get token details
+     *
      * @param array $response
      * @return array
      * @throws \Exception
      */
-    protected function getTokenDetails($response)
+    protected function getTokenDetails($response): array
     {
         $expirationDate = (new \DateTime($response['card_expiry']))->format('m/y');
         $cardType = $response['card_type'];
