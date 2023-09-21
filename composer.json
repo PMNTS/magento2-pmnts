@@ -10,7 +10,7 @@
     "version": "dev-master",
     "autoload": {
         "files": [
-            "registration.php"
+          "registration.php"
         ],
         "psr-4": {
             "PMNTS\\Gateway\\": ""

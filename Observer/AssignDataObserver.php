@@ -1,18 +1,25 @@
 <?php
+declare(strict_types=1);
 
 namespace PMNTS\Gateway\Observer;
 
-class AssignDataObserver extends \Magento\Payment\Observer\AbstractDataAssignObserver
+use Magento\Framework\Event\Observer;
+use Magento\Quote\Api\Data\PaymentInterface;
+use Magento\Payment\Observer\AbstractDataAssignObserver;
+
+class AssignDataObserver extends AbstractDataAssignObserver
 {
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * Execute
+     *
+     * @param Observer $observer
      * @return void
      */
-    public function execute(\Magento\Framework\Event\Observer $observer)
+    public function execute(Observer $observer)
     {
         $data = $this->readDataArgument($observer);
 
-        $additionalData = $data->getData(\Magento\Quote\Api\Data\PaymentInterface::KEY_ADDITIONAL_DATA);
+        $additionalData = $data->getData(PaymentInterface::KEY_ADDITIONAL_DATA);
 
         $paymentInfo = $this->readPaymentModelArgument($observer);
 

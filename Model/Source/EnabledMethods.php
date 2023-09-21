@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Enabled carriers source model
  *
@@ -8,30 +7,33 @@
  * @copyright   PMNTS (http://PMNTS.io)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+declare(strict_types=1);
 
 namespace PMNTS\Gateway\Model\Source;
 
-class EnabledMethods implements \Magento\Framework\Option\ArrayInterface
+use Magento\Framework\Option\ArrayInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Shipping\Model\Config;
+
+class EnabledMethods implements ArrayInterface
 {
     /**
-     * Core store config
-     *
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var ScopeConfigInterface
      */
     protected $_scopeConfig;
 
     /**
-     * @var \Magento\Shipping\Model\Config
+     * @var Config
      */
     protected $_shippingConfig;
 
     /**
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Shipping\Model\Config $shippingConfig
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Config $shippingConfig
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Shipping\Model\Config $shippingConfig
+        ScopeConfigInterface $scopeConfig,
+        Config $shippingConfig
     ) {
         $this->_scopeConfig = $scopeConfig;
         $this->_shippingConfig = $shippingConfig;
@@ -39,10 +41,9 @@ class EnabledMethods implements \Magento\Framework\Option\ArrayInterface
 
     /**
      * Return array of carriers.
-     * If $isActiveOnlyFlag is set to true, will return only active carriers
      *
      * @param bool $isActiveOnlyFlag
-     * @return array
+     * @return array|\string[][]
      */
     public function toOptionArray($isActiveOnlyFlag = false)
     {
