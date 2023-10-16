@@ -139,8 +139,14 @@ class Gateway
      * @return mixed
      * @throws \Exception
      */
-    public function tokenPurchase($pmntsToken, $amount, $reference, $cvv = null, $fraud_data = null, $paymentType=null)
-    {
+    public function tokenPurchase(
+        $pmntsToken,
+        $amount,
+        $reference,
+        $cvv = null,
+        $fraud_data = null,
+        $paymentType = null
+    ) {
         $payload = [];
         $customer_ip = $this->getCustomerIp();
         if (function_exists('bcmul')) {
@@ -150,7 +156,7 @@ class Gateway
             $int_amount = (int)$multiplied;
         }
 
-        if ($paymentType && $paymentType == self::PMNTS_GOOGLE_PAYMENT_METHOD_CODE) {
+        if ($paymentType == self::PMNTS_GOOGLE_PAYMENT_METHOD_CODE) {
             $token = json_decode($pmntsToken, true);
             $payload = [
                 "amount" => $int_amount,
