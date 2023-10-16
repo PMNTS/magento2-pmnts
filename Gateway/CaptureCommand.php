@@ -114,7 +114,7 @@ class CaptureCommand extends AbstractCommand
         $reference = $this->pmntsHelper->getOrderReference($order);
         $fraudData = $this->pmntsHelper->buildFraudPayload($order);
         $paymentType = $payment->getAdditionalInformation('type');
-        $currencyCode = $order->getBaseCurrency()->getCode();
+        $currencyCode = $order->getBaseCurrencyCode();
         /** @var array $result */
         $result = $gateway->tokenPurchase(
             $pmntsToken,

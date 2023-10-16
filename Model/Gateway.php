@@ -33,6 +33,7 @@ namespace PMNTS\Gateway\Model;
 use Zend\Http\Client\Adapter\Exception\TimeoutException;
 use Magento\Framework\App\State;
 use Magento\Framework\App\Area;
+use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * The Fat Zebra Gateway class for interfacing with Fat Zebra
@@ -90,11 +91,17 @@ class Gateway
     public bool $testMode = true;
 
     /**
+     * @var Json
+     */
+    private Json $json;
+
+    /**
      * Creates a new instance of the Fat Zebra gateway object
      *
      * @param string $username
      * @param string $token
      * @param State $state
+     * @param Json $json
      * @param bool $testMode
      * @param string|null $gatewayUrl
      */
@@ -102,6 +109,7 @@ class Gateway
         string $username,
         string $token,
         State $state,
+        Json $json,
         bool $testMode = true,
         string $gatewayUrl = null
     ) {
@@ -125,6 +133,7 @@ class Gateway
             $this->url = $gatewayUrl;
         }
         $this->state = $state;
+        $this->json = $json;
     }
 
     /**
@@ -168,7 +177,7 @@ class Gateway
                 "customer_ip" => $customer_ip,
                 "wallet" => [
                     "type" => "GOOGLE",
-                    "token" => $this->prepareGoogleToken($pmntsToken)
+                    "token" => $this->json->unserialize($pmntsToken)
                 ]
             ];
         } else {
@@ -186,26 +195,6 @@ class Gateway
             $payload['fraud'] = $fraud_data;
         }
         return $this->doRequest("POST", "/purchases", $payload);
-    }
-
-    /**
-     * Validate token
-     *
-     * @param string $pmntsToken
-     * @return array
-     * @throws \JsonException
-     */
-    private function prepareGoogleToken(string $pmntsToken)
-    {
-        try {
-            $token = json_decode($pmntsToken, true);
-            if (!is_array($token)) {
-                throw new \JsonException("JSON Syntax error. Invalid Token");
-            }
-        } catch (\Exception $e) {
-            throw new \JsonException("JSON Syntax error. Invalid Token");
-        }
-        return $token;
     }
 
     /**

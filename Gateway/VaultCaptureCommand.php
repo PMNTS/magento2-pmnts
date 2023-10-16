@@ -75,7 +75,7 @@ class VaultCaptureCommand extends AbstractCommand
             /** @var  \PMNTS\Gateway\Model\Gateway $gateway */
             $gateway = $this->getGateway($storeId);
             $fraudData = $this->pmntsHelper->buildFraudPayload($order);
-            $currencyCode = $order->getBaseCurrency()->getCode();
+            $currencyCode = $order->getBaseCurrencyCode();
             $result = $gateway->tokenPurchase(
                 $token->getGatewayToken(),
                 $currencyCode,
