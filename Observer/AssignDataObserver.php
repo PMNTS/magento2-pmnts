@@ -30,7 +30,7 @@ class AssignDataObserver extends AbstractDataAssignObserver
         if (array_key_exists('cc_token', $additionalData)) {
             $paymentInfo->setAdditionalInformation('pmnts_token', $additionalData['cc_token']);
         }
-        $paymentInfo->setAdditionInformation('type', $additionalData['type'] ?? null);
+        $paymentInfo->setAdditionalInformation('type', $additionalData['type'] ?? null);
         if (isset($additionalData['pmnts_id']) && !empty($additionalData['pmnts_id'])) {
             $paymentInfo->setAdditionalInformation('pmnts_device_id', $additionalData['pmnts_id']);
         }
