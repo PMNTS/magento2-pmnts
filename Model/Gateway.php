@@ -1,31 +1,31 @@
 <?php
-    /**
-     * Adapted from Fat Zebra PHP Gateway Library
-     * Version 1.1.5
-     *
-     * Created February 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
-     * Updated 20 February 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
-     * Updated 19 April 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
-     *  - Added refund support
-     *  - Added tokenization support
-     * Updated 10 July 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
-     *  - Added support for Plans, Customers and Subscriptions
-     * Updated 01 July 2019 - Matthew O'Loughlin (matthew@aligent.com.au)
-     *  - PSR pass and adapted for Magento 2
-     *  - Stripped out unused functionality
-     * Updated 06 April 2023 - Harsha Amaraweera (harsha.amaraweera@aligent.com.au)
-     *  - PSR pass and adapted for Magento 246
+/**
+ * Adapted from Fat Zebra PHP Gateway Library
+ * Version 1.1.5
+ *
+ * Created February 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
+ * Updated 20 February 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
+ * Updated 19 April 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
+ *  - Added refund support
+ *  - Added tokenization support
+ * Updated 10 July 2012 - Matthew Savage (matthew.savage@fatzebra.com.au)
+ *  - Added support for Plans, Customers and Subscriptions
+ * Updated 01 July 2019 - Matthew O'Loughlin (matthew@aligent.com.au)
+ *  - PSR pass and adapted for Magento 2
+ *  - Stripped out unused functionality
+ * Updated 06 April 2023 - Harsha Amaraweera (harsha.amaraweera@aligent.com.au)
+ *  - PSR pass and adapted for Magento 246
 
-     * The original source for this library, including its tests can be found at
-     * https://github.com/fatzebra/PHP-Library
-     *
-     * Please visit http://docs.fatzebra.com.au for details on the Fat Zebra API
-     * or https://www.fatzebra.com.au/help for support.
-     *
-     * Patches, pull requests, issues, comments and suggestions always welcome.
-     *
-     * @package FatZebra
-     */
+ * The original source for this library, including its tests can be found at
+ * https://github.com/fatzebra/PHP-Library
+ *
+ * Please visit http://docs.fatzebra.com.au for details on the Fat Zebra API
+ * or https://www.fatzebra.com.au/help for support.
+ *
+ * Patches, pull requests, issues, comments and suggestions always welcome.
+ *
+ * @package FatZebra
+ */
 declare(strict_types=1);
 
 namespace PMNTS\Gateway\Model;
@@ -33,6 +33,7 @@ namespace PMNTS\Gateway\Model;
 use Zend\Http\Client\Adapter\Exception\TimeoutException;
 use Magento\Framework\App\State;
 use Magento\Framework\App\Area;
+use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * The Fat Zebra Gateway class for interfacing with Fat Zebra
@@ -90,11 +91,17 @@ class Gateway
     public bool $testMode = true;
 
     /**
+     * @var Json
+     */
+    private Json $json;
+
+    /**
      * Creates a new instance of the Fat Zebra gateway object
      *
      * @param string $username
      * @param string $token
      * @param State $state
+     * @param Json $json
      * @param bool $testMode
      * @param string|null $gatewayUrl
      */
@@ -102,6 +109,7 @@ class Gateway
         string $username,
         string $token,
         State $state,
+        Json $json,
         bool $testMode = true,
         string $gatewayUrl = null
     ) {
@@ -125,12 +133,14 @@ class Gateway
             $this->url = $gatewayUrl;
         }
         $this->state = $state;
+        $this->json = $json;
     }
 
     /**
      * Performs a purchase against the FatZebra gateway with a tokenized credit card
      *
      * @param $pmntsToken
+     * @param $currencyCode
      * @param $amount
      * @param $reference
      * @param $cvv
@@ -141,12 +151,14 @@ class Gateway
      */
     public function tokenPurchase(
         $pmntsToken,
+        $currencyCode,
         $amount,
         $reference,
         $cvv = null,
         $fraud_data = null,
         $paymentType = null
     ) {
+
         $payload = [];
         $customer_ip = $this->getCustomerIp();
         if (function_exists('bcmul')) {
@@ -157,20 +169,22 @@ class Gateway
         }
 
         if ($paymentType == self::PMNTS_GOOGLE_PAYMENT_METHOD_CODE) {
-            $token = json_decode($pmntsToken, true);
+
             $payload = [
                 "amount" => $int_amount,
+                "currency" => $currencyCode,
                 "reference" => $reference,
                 "customer_ip" => $customer_ip,
                 "wallet" => [
                     "type" => "GOOGLE",
-                    "token" => $token
+                    "token" => $this->json->unserialize($pmntsToken)
                 ]
             ];
         } else {
             $payload = [
                 "customer_ip" => $customer_ip,
                 "card_token" => $pmntsToken,
+                "currency" => $currencyCode,
                 "cvv" => $cvv,
                 "amount" => $int_amount,
                 "reference" => $reference
@@ -218,7 +232,7 @@ class Gateway
             "transaction_id" => $transaction_id,
             "amount" => $int_amount,
             "reference" => $reference
-            ];
+        ];
 
         return $this->doRequest("POST", "/refunds", $payload);
     }
