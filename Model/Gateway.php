@@ -39,6 +39,7 @@ use Magento\Framework\App\Area;
  */
 class Gateway
 {
+    public const PMNTS_GOOGLE_PAYMENT_METHOD_CODE = 'googlepay';
     /**
      * @var string
      */
@@ -129,31 +130,52 @@ class Gateway
     /**
      * Performs a purchase against the FatZebra gateway with a tokenized credit card
      *
-     * @param mixed $token
-     * @param mixed $amount
-     * @param mixed $reference
-     * @param mixed $cvv
-     * @param mixed $fraud_data
+     * @param $pmntsToken
+     * @param $amount
+     * @param $reference
+     * @param $cvv
+     * @param $fraud_data
+     * @param $paymentType
      * @return mixed
      * @throws \Exception
      */
-    public function tokenPurchase($token, $amount, $reference, $cvv = null, $fraud_data = null)
-    {
+    public function tokenPurchase(
+        $pmntsToken,
+        $amount,
+        $reference,
+        $cvv = null,
+        $fraud_data = null,
+        $paymentType = null
+    ) {
+        $payload = [];
         $customer_ip = $this->getCustomerIp();
-
         if (function_exists('bcmul')) {
             $int_amount = (int)bcmul((string)$amount, "100");
         } else {
             $multiplied = round($amount * 100);
             $int_amount = (int)$multiplied;
         }
-        $payload = [
-            "customer_ip" => $customer_ip,
-            "card_token" => $token,
-            "cvv" => $cvv,
-            "amount" => $int_amount,
-            "reference" => $reference
+
+        if ($paymentType == self::PMNTS_GOOGLE_PAYMENT_METHOD_CODE) {
+            $token = json_decode($pmntsToken, true);
+            $payload = [
+                "amount" => $int_amount,
+                "reference" => $reference,
+                "customer_ip" => $customer_ip,
+                "wallet" => [
+                    "type" => "GOOGLE",
+                    "token" => $token
+                ]
             ];
+        } else {
+            $payload = [
+                "customer_ip" => $customer_ip,
+                "card_token" => $pmntsToken,
+                "cvv" => $cvv,
+                "amount" => $int_amount,
+                "reference" => $reference
+            ];
+        }
 
         if ($fraud_data !== null) {
             $payload['fraud'] = $fraud_data;

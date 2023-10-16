@@ -113,9 +113,17 @@ class CaptureCommand extends AbstractCommand
 
         $reference = $this->pmntsHelper->getOrderReference($order);
         $fraudData = $this->pmntsHelper->buildFraudPayload($order);
+        $paymentType = $payment->getAdditionalInformation('type');
 
         /** @var array $result */
-        $result = $gateway->tokenPurchase($pmntsToken, $commandSubject['amount'], $reference, null, $fraudData);
+        $result = $gateway->tokenPurchase(
+            $pmntsToken,
+            $commandSubject['amount'],
+            $reference,
+            null,
+            $fraudData,
+            $paymentType
+        );
 
         if ($result && isset($result['response'])) {
             /**
