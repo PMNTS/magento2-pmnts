@@ -4,6 +4,7 @@ namespace PMNTS\Gateway\Block\Customer;
 
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 use Magento\Vault\Block\AbstractCardRenderer;
+use PMNTS\Gateway\Helper\Data;
 
 /**
  * @api
@@ -15,55 +16,60 @@ class CardRenderer extends AbstractCardRenderer
      * Can render specified token
      *
      * @param PaymentTokenInterface $token
-     * @return boolean
-     * @since 100.1.0
+     * @return bool
      */
-    public function canRender(PaymentTokenInterface $token)
+    public function canRender(PaymentTokenInterface $token): bool
     {
-        return $token->getPaymentMethodCode() === \PMNTS\Gateway\Helper\Data::METHOD_CODE;
+        return $token->getPaymentMethodCode() === Data::METHOD_CODE;
     }
 
     /**
+     * Get Number Last 4 Digits
+     *
      * @return string
-     * @since 100.1.0
      */
-    public function getNumberLast4Digits()
+    public function getNumberLast4Digits(): string
     {
-        return $this->getTokenDetails()['maskedCC'];
+        return $this->getTokenDetails()['maskedCC'] ?? '';
     }
 
     /**
+     * Get expire data
+     *
      * @return string
-     * @since 100.1.0
      */
-    public function getExpDate()
+    public function getExpDate(): string
     {
-        return $this->getTokenDetails()['expirationDate'];
-    }
-    /**
-     * @return string
-     * @since 100.1.0
-     */
-    public function getIconUrl()
-    {
-        return $this->getIconForType($this->getTokenDetails()['type'])['url'];
+        return $this->getTokenDetails()['expirationDate'] ?? '';
     }
 
     /**
+     * Get Icon url
+     *
+     * @return string
+     */
+    public function getIconUrl(): string
+    {
+        return $this->getIconForType($this->getTokenDetails()['type'])['url'] ?? '';
+    }
+
+    /**
+     * Get Icon height
+     *
      * @return int
-     * @since 100.1.0
      */
-    public function getIconHeight()
+    public function getIconHeight(): int
     {
-        return $this->getIconForType($this->getTokenDetails()['type'])['height'];
+        return $this->getIconForType($this->getTokenDetails()['type'])['height'] ?? 0;
     }
 
     /**
+     * Get Icon width
+     *
      * @return int
-     * @since 100.1.0
      */
-    public function getIconWidth()
+    public function getIconWidth(): int
     {
-        return $this->getIconForType($this->getTokenDetails()['type'])['width'];
+        return $this->getIconForType($this->getTokenDetails()['type'])['width'] ?? 0;
     }
 }

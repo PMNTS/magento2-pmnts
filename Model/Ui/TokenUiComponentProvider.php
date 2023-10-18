@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace PMNTS\Gateway\Model\Ui;
 
@@ -8,9 +9,6 @@ use Magento\Vault\Model\Ui\TokenUiComponentProviderInterface;
 use Magento\Vault\Model\Ui\TokenUiComponentInterfaceFactory;
 use Magento\Framework\UrlInterface;
 
-/**
- * Class TokenUiComponentProvider
- */
 class TokenUiComponentProvider implements TokenUiComponentProviderInterface
 {
     /**
@@ -19,7 +17,7 @@ class TokenUiComponentProvider implements TokenUiComponentProviderInterface
     private $componentFactory;
 
     /**
-     * @var \Magento\Framework\UrlInterface
+     * @var UrlInterface
      */
     private $urlBuilder;
 
@@ -37,10 +35,11 @@ class TokenUiComponentProvider implements TokenUiComponentProviderInterface
 
     /**
      * Get UI component for token
+     *
      * @param PaymentTokenInterface $paymentToken
      * @return TokenUiComponentInterface
      */
-    public function getComponentForToken(PaymentTokenInterface $paymentToken)
+    public function getComponentForToken(PaymentTokenInterface $paymentToken): TokenUiComponentInterface
     {
         $jsonDetails = json_decode($paymentToken->getTokenDetails() ?: '{}', true);
         $component = $this->componentFactory->create(

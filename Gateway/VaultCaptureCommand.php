@@ -7,8 +7,15 @@
  * @copyright   PMNTS (http://PMNTS.io)
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
+declare(strict_types=1);
+
 namespace PMNTS\Gateway\Gateway;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Payment\Gateway\Command\CommandException;
+use PMNTS\Gateway\Helper\Data;
+use PMNTS\Gateway\Model\GatewayFactory;
+use Magento\Vault\Api\PaymentTokenManagementInterface;
 use Psr\Log\LoggerInterface;
 
 class VaultCaptureCommand extends AbstractCommand
@@ -21,18 +28,19 @@ class VaultCaptureCommand extends AbstractCommand
 
     /**
      * VaultCaptureCommand constructor.
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
-     * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
+     *
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Data $pmntsHelper
+     * @param GatewayFactory $gatewayFactory
      * @param LoggerInterface $logger
-     * @param \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
+     * @param PaymentTokenManagementInterface $tokenManagement
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \PMNTS\Gateway\Helper\Data $pmntsHelper,
-        \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Vault\Api\PaymentTokenManagementInterface $tokenManagement
+        ScopeConfigInterface $scopeConfig,
+        Data $pmntsHelper,
+        GatewayFactory $gatewayFactory,
+        LoggerInterface $logger,
+        PaymentTokenManagementInterface $tokenManagement
     ) {
         parent::__construct($scopeConfig, $pmntsHelper, $gatewayFactory, $logger);
         $this->tokenManagement = $tokenManagement;
@@ -40,12 +48,13 @@ class VaultCaptureCommand extends AbstractCommand
 
     /**
      * Perform a purchase against a saved card token.
+     *
      * @param array $commandSubject
      * @return void
      * @throws \Magento\Payment\Gateway\Command\CommandException
      * @throws \Zend\Http\Client\Adapter\Exception\TimeoutException
      */
-    public function execute(array $commandSubject)
+    public function execute(array $commandSubject): void
     {
         /** @var  \Magento\Sales\Model\Order\Payment $payment */
         $payment = $commandSubject['payment']->getPayment();
@@ -66,9 +75,10 @@ class VaultCaptureCommand extends AbstractCommand
             /** @var  \PMNTS\Gateway\Model\Gateway $gateway */
             $gateway = $this->getGateway($storeId);
             $fraudData = $this->pmntsHelper->buildFraudPayload($order);
-
-            $result = $gateway->token_purchase(
+            $currencyCode = $order->getBaseCurrencyCode();
+            $result = $gateway->tokenPurchase(
                 $token->getGatewayToken(),
+                $currencyCode,
                 $commandSubject['amount'],
                 $this->pmntsHelper->getOrderReference($order),
                 null,
@@ -77,6 +87,8 @@ class VaultCaptureCommand extends AbstractCommand
 
             if ($result && isset($result['response']) && $result['response']['successful'] === true) {
                 $payment->setLastTransId($result['response']['transaction_id']);
+                $payment->setTransactionId($result['response']['transaction_id']);
+                $payment->setIsTransactionClosed(true);
             } else {
                 $errors = isset($result['errors']) ? $result['errors'] : ['Gateway error'];
                 $this->logger->critical(__(
@@ -84,7 +96,7 @@ class VaultCaptureCommand extends AbstractCommand
                     $order->getIncrementId(),
                     implode('. ', $errors)
                 ));
-                throw new \Magento\Payment\Gateway\Command\CommandException(__('Payment failed, please contact customer service.'));
+                throw new CommandException(__('Payment failed, please contact customer service.'));
             }
         } else {
             $this->logger->critical(__(
@@ -92,7 +104,7 @@ class VaultCaptureCommand extends AbstractCommand
                 $customerId,
                 $publicHash
             ));
-            throw new \Magento\Payment\Gateway\Command\CommandException(__('Unable to place order.'));
+            throw new CommandException(__('Unable to place order.'));
         }
     }
 }

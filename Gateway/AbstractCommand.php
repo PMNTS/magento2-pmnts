@@ -1,33 +1,51 @@
 <?php
+declare(strict_types=1);
 
 namespace PMNTS\Gateway\Gateway;
 
-abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterface
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Payment\Gateway\CommandInterface;
+use PMNTS\Gateway\Helper\Data;
+use PMNTS\Gateway\Model\GatewayFactory;
+use PMNTS\Gateway\Model\Gateway;
+use Psr\Log\LoggerInterface;
+
+abstract class AbstractCommand implements CommandInterface
 {
-    /** @var \Magento\Framework\App\Config\ScopeConfigInterface */
+    /**
+     * @var ScopeConfigInterface
+     */
     protected $scopeConfig;
 
-    /** @var \PMNTS\Gateway\Helper\Data */
+    /**
+     * @var Data
+     */
     protected $pmntsHelper;
 
-    /** @var \PMNTS\Gateway\Model\GatewayFactory */
+    /**
+     * @var GatewayFactory
+     */
     protected $gatewayFactory;
 
-    /** @var \Psr\Log\LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     protected $logger;
 
     /**
      * AbstractCommand constructor.
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \PMNTS\Gateway\Helper\Data $pmntsHelper
-     * @param \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory
-     * @param \Psr\Log\LoggerInterface $logger
+     *
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Data $pmntsHelper
+     * @param GatewayFactory $gatewayFactory
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \PMNTS\Gateway\Helper\Data $pmntsHelper,
-        \PMNTS\Gateway\Model\GatewayFactory $gatewayFactory,
-        \Psr\Log\LoggerInterface $logger
+        ScopeConfigInterface $scopeConfig,
+        Data $pmntsHelper,
+        GatewayFactory $gatewayFactory,
+        LoggerInterface $logger
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->pmntsHelper = $pmntsHelper;
@@ -36,33 +54,35 @@ abstract class AbstractCommand implements \Magento\Payment\Gateway\CommandInterf
     }
 
     /**
-     * @param $storeId
-     * @return \Pmnts\Gateway\Model\Gateway
+     * Get Gateway
+     *
+     * @param string|int|null $storeId
+     * @return Gateway
      */
-    public function getGateway($storeId)
+    public function getGateway($storeId): Gateway
     {
         $username = $this->scopeConfig->getValue(
-            \PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_USERNAME,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            Data::CONFIG_PATH_PMNTS_USERNAME,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
 
         $token = $this->scopeConfig->getValue(
-            \PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_TOKEN,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            Data::CONFIG_PATH_PMNTS_TOKEN,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
 
         $sandbox = (bool)$this->scopeConfig->getValue(
-            \PMNTS\Gateway\Helper\Data::CONFIG_PATH_PMNTS_SANDBOX,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            Data::CONFIG_PATH_PMNTS_SANDBOX,
+            ScopeInterface::SCOPE_STORE,
             $storeId
         );
 
         return $this->gatewayFactory->create([
             'username' => $username,
             'token' => $token,
-            'test_mode' => $sandbox
+            'testMode' => $sandbox
         ]);
     }
 }
